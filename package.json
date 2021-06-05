@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "trade": "bash trade.sh"
+    "trade": "bash trade.sh",
+    "tradepm": "bash trade-pm2.sh"
   },
   "author": "diepmyduong@gmail.com",
   "license": "ISC",
