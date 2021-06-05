@@ -1,0 +1,168 @@
+<html>
+    <head>
+        <title>Trading Bot</title>
+        <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+        <style>
+            input { border: 1px solid black; padding: 2px; margin: 2px; }
+        </style>
+    </head>
+    <body>
+        <div class="grid grid-cols-3">
+            <div class="col-span-2">
+                <h2>Cấu hình tài khoản</h2>
+                <div>
+                    <span>API Key</span> <input id="api_key" type="password" /> 
+                    API Secret <input id="api_secret" type="password"  />
+                    Network <select id="network">
+                        <option value="mainnet" selected>Mainnet</option>
+                        <option value="testnet">Testnet</option>
+                    </select>
+                </div>
+                <h2>Symbol Trading</h2>
+                <div>
+                    Token 0 <input id="asset_0" placeholder="BNB" class="w-16"/> / <input id="base_0" placeholder="USDT" class="w-16" />
+                    Vốn($) <input type="number" id="capital_0" class="w-32" >
+                    TimeFrame <input id="tf_long_0" placeholder="Dài" value="1d" class="w-10" />:<input id="tf_short_0" placeholder="Ngắn" value="1h" class="w-10" />
+                    Balance <span id="balance_0">0</span>
+                    Profit <span id="profit_0">0</span>
+                    Trades <span id="trades_0">0</span>
+                    Win/Close <span id="winClose_0">0</span>
+                    Status <span id="status_0">stopped</span>
+                    
+                    <button id="active_btn_0" class="px-3 py-1 bg-green-300 ">Start</button>
+
+                </div>
+                <div>
+                    Token 1 <input id="asset_1" placeholder="BNB" class="w-16"/> / <input id="base_1" placeholder="USDT" class="w-16" />
+                    Vốn($) <input type="number" id="capital_1" class="w-32" >
+                    TimeFrame <input id="tf_long_1" placeholder="Dài" value="1d" class="w-10" />:<input id="tf_short_1" placeholder="Ngắn" value="1h" class="w-10" />
+                    Balance <span id="balance_1">0</span>
+                    Profit <span id="profit_1">0</span>
+                    Trades <span id="trades_1">0</span>
+                    Win/Close <span id="winClose_1">0</span>
+                    Status <span id="status_1">stopped</span>
+                    
+                    <button id="active_btn_1" class="px-3 py-1 bg-green-300 ">Start</button>
+
+                </div>
+                <div>
+                    Token 2 <input id="asset_2" placeholder="BNB" class="w-16"/> / <input id="base_2" placeholder="USDT" class="w-16" />
+                    Vốn($) <input type="number" id="capital_2" class="w-32" >
+                    TimeFrame <input id="tf_long_2" placeholder="Dài" value="1d" class="w-10" />:<input id="tf_short_2" placeholder="Ngắn" value="1h" class="w-10" />
+                    Balance <span id="balance_2">0</span>
+                    Profit <span id="profit_2">0</span>
+                    Trades <span id="trades_2">0</span>
+                    Win/Close <span id="winClose_2">0</span>
+                    Status <span id="status_2">stopped</span>
+                    
+                    <button id="active_btn_2" class="px-3 py-1 bg-green-300 ">Start</button>
+
+                </div>
+                <div>
+                    Token 3 <input id="asset_3" placeholder="BNB" class="w-16"/> / <input id="base_3" placeholder="USDT" class="w-16" />
+                    Vốn($) <input type="number" id="capital_3" class="w-32" >
+                    TimeFrame <input id="tf_long_3" placeholder="Dài" value="1d" class="w-10" />:<input id="tf_short_3" placeholder="Ngắn" value="1h" class="w-10" />
+                    Balance <span id="balance_3">0</span>
+                    Profit <span id="profit_3">0</span>
+                    Trades <span id="trades_3">0</span>
+                    Win/Close <span id="winClose_3">0</span>
+                    Status <span id="status_3">stopped</span>
+                    
+                    <button id="active_btn_3" class="px-3 py-1 bg-green-300 ">Start</button>
+
+                </div>
+                <div>
+                    Token 4 <input id="asset_4" placeholder="BNB" class="w-16"/> / <input id="base_4" placeholder="USDT" class="w-16" />
+                    Vốn($) <input type="number" id="capital_4" class="w-32" >
+                    TimeFrame <input id="tf_long_4" placeholder="Dài" value="1d" class="w-10" />:<input id="tf_short_4" placeholder="Ngắn" value="1h" class="w-10" />
+                    Balance <span id="balance_4">0</span>
+                    Profit <span id="profit_4">0</span>
+                    Trades <span id="trades_4">0</span>
+                    Win/Close <span id="winClose_4">0</span>
+                    Status <span id="status_4">stopped</span>
+                    
+                    <button id="active_btn_4" class="px-3 py-1 bg-green-300 ">Start</button>
+
+                </div>
+                <div>
+                    Token 5 <input id="asset_5" placeholder="BNB" class="w-16"/> / <input id="base_5" placeholder="USDT" class="w-16" />
+                    Vốn($) <input type="number" id="capital_5" class="w-32" >
+                    TimeFrame <input id="tf_long_5" placeholder="Dài" value="1d" class="w-10" />:<input id="tf_short_5" placeholder="Ngắn" value="1h" class="w-10" />
+                    Balance <span id="balance_5">0</span>
+                    Profit <span id="profit_5">0</span>
+                    Trades <span id="trades_5">0</span>
+                    Win/Close <span id="winClose_5">0</span>
+                    Status <span id="status_5">stopped</span>
+                    
+                    <button id="active_btn_5" class="px-3 py-1 bg-green-300 ">Start</button>
+
+                </div>
+                <div>
+                    Token 6 <input id="asset_6" placeholder="BNB" class="w-16"/> / <input id="base_6" placeholder="USDT" class="w-16" />
+                    Vốn($) <input type="number" id="capital_6" class="w-32" >
+                    TimeFrame <input id="tf_long_6" placeholder="Dài" value="1d" class="w-10" />:<input id="tf_short_6" placeholder="Ngắn" value="1h" class="w-10" />
+                    Balance <span id="balance_6">0</span>
+                    Profit <span id="profit_6">0</span>
+                    Trades <span id="trades_6">0</span>
+                    Win/Close <span id="winClose_6">0</span>
+                    Status <span id="status_6">stopped</span>
+                    
+                    <button id="active_btn_6" class="px-3 py-1 bg-green-300 ">Start</button>
+
+                </div>
+                <div>
+                    Token 7 <input id="asset_7" placeholder="BNB" class="w-16"/> / <input id="base_7" placeholder="USDT" class="w-16" />
+                    Vốn($) <input type="number" id="capital_7" class="w-32" >
+                    TimeFrame <input id="tf_long_7" placeholder="Dài" value="1d" class="w-10" />:<input id="tf_short_7" placeholder="Ngắn" value="1h" class="w-10" />
+                    Balance <span id="balance_7">0</span>
+                    Profit <span id="profit_7">0</span>
+                    Trades <span id="trades_7">0</span>
+                    Win/Close <span id="winClose_7">0</span>
+                    Status <span id="status_7">stopped</span>
+                    
+                    <button id="active_btn_7" class="px-3 py-1 bg-green-300 ">Start</button>
+
+                </div>
+                <div>
+                    Token 8 <input id="asset_8" placeholder="BNB" class="w-16"/> / <input id="base_8" placeholder="USDT" class="w-16" />
+                    Vốn($) <input type="number" id="capital_8" class="w-32" >
+                    TimeFrame <input id="tf_long_8" placeholder="Dài" value="1d" class="w-10" />:<input id="tf_short_8" placeholder="Ngắn" value="1h" class="w-10" />
+                    Balance <span id="balance_8">0</span>
+                    Profit <span id="profit_8">0</span>
+                    Trades <span id="trades_8">0</span>
+                    Win/Close <span id="winClose_8">0</span>
+                    Status <span id="status_8">stopped</span>
+                    
+                    <button id="active_btn_8" class="px-3 py-1 bg-green-300 ">Start</button>
+
+                </div>
+                <div>
+                    Token 9 <input id="asset_9" placeholder="BNB" class="w-16"/> / <input id="base_9" placeholder="USDT" class="w-16" />
+                    Vốn($) <input type="number" id="capital_9" class="w-32" >
+                    TimeFrame <input id="tf_long_9" placeholder="Dài" value="1d" class="w-10" />:<input id="tf_short_9" placeholder="Ngắn" value="1h" class="w-10" />
+                    Balance <span id="balance_9">0</span>
+                    Profit <span id="profit_9">0</span>
+                    Trades <span id="trades_9">0</span>
+                    Win/Close <span id="winClose_9">0</span>
+                    Status <span id="status_9">stopped</span>
+                    
+                    <button id="active_btn_9" class="px-3 py-1 bg-green-300 ">Start</button>
+
+                </div>
+            </div>
+            <div>
+                <h2>Biểu đồ</h2>
+            </div>
+        </div>
+        
+
+        <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3.1.0/dist/browser.es6.js" integrity="sha256-R9YL+ZtF/v+CbnaDyUnlKcvl814aC4LqLayQi2wOSFI=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
+        <script src="chart.js"></script>
+        <script src="account.js"></script>
+        <script>
+
+        </script>
+    </body>
+</html>

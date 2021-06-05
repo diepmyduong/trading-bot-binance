@@ -1,0 +1,31 @@
+{
+  "name": "traddingbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "trade": "bash trade.sh"
+  },
+  "author": "diepmyduong@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
+    "ccxt": "^1.50.77",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "lodash": "^4.17.21",
+    "technicalindicators": "^3.1.0",
+    "winston": "^3.3.3",
+    "ws": "^7.4.6"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "prettier": {
+    "printWidth": 100
+  }
+}
