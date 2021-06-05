@@ -23,4 +23,4 @@ BASE=${base} \
 CAPITAL=${capital} \
 TF_LONG=${tfLong} \
 TF_SHORT=${tfShort} \
-pm2 --name ${botName} trade.js
+pm2 start trade.js --name ${botName}
