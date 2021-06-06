@@ -25,7 +25,11 @@ binanceClient.loadMarkets().then((markets) => {
 const fetchKline = async function ({ symbol, interval, limit }) {
   return axios
     .get(binanceHost + "/v3/klines", { params: { symbol, interval, limit } })
-    .then((res) => res.data);
+    .then((res) => res.data)
+    .catch((err) => {
+      console.log("fetchKline error", err.message);
+      throw err;
+    });
 };
 
 class BinanceSocket extends EventEmitter {
@@ -57,7 +61,7 @@ class BinanceOrderWatcher extends EventEmitter {
         this.emit("data", order);
         clearInterval(interval);
       }
-    }, 1000);
+    }, 5000);
   }
 }
 

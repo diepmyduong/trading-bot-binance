@@ -2,6 +2,7 @@
 
 const TelegramBot = require("node-telegram-bot-api");
 const Transport = require("winston-transport");
+const { config } = require("./config");
 
 class TelegramTransport extends Transport {
   constructor(opts, { token, chatId }) {
@@ -14,7 +15,7 @@ class TelegramTransport extends Transport {
     setImmediate(() => {
       this.emit("logged", info);
     });
-    this.bot.sendMessage(this.chatId, info.message);
+    if (!config.debug) this.bot.sendMessage(this.chatId, info.message);
     // Perform the writing to the remote service
     callback();
   }

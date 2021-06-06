@@ -44,10 +44,18 @@ app.post("/api/order/sell", async (req, res) => {
     const { asset, base, price } = req.body;
     const balance = await binanceClient.fetchBalance();
     const assetFree = balance[asset].free;
-    const order = await await binanceClient.createLimitSellOrder(
+    // const order = await await binanceClient.createLimitSellOrder(
+    //   `${asset}/${base}`,
+    //   assetFree,
+    //   price
+    // );
+    const order = await await binanceClient.createOrder(
       `${asset}/${base}`,
+      "STOP_LOSS_LIMIT",
+      "sell",
       assetFree,
-      price
+      price * 1.001,
+      { stopPrice: price * 0.999 }
     );
     res.json(order);
   } catch (err) {

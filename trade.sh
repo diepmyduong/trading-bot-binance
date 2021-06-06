@@ -23,4 +23,4 @@ BASE=${base} \
 CAPITAL=${capital} \
 TF_LONG=${tfLong} \
 TF_SHORT=${tfShort} \
-node trade.js
+node trade-v2.js

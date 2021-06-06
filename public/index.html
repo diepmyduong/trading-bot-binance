@@ -27,7 +27,7 @@
         <script src="chart.js"></script>
         <script src="account.js"></script>
         <script>
-            const logs = [];
+            
             var chart1d, chart1h;
             function getSysmbol() {
                 const asset = document.getElementById("asset").value;
@@ -56,6 +56,7 @@
                 let close = 0;
                 let maxWin = 0;
                 let maxLost = 0;
+                const logs = [];
 
                 let symbol = getSysmbol().symbol;
                 if (symbol == "") {
@@ -142,7 +143,7 @@
                     document.getElementById('logs').innerText = logs.map(l => `[${new Date(l.bar.time * 1000).toDateString()}] ${l.type} - Price: ${l.price} - Profit: ${l.profit.toFixed(4)}$ - ${l.profitPer.toFixed(4)}}`).join('\n');
                 }) 
                 chart1h.on('setData', async (bars) => {
-                    return;
+                    // return;
                     const delay = (n) => new Promise((resolve, reject) => setTimeout(resolve, n));
                     await delay(2000);
                     var sma_1h = new SMA({ period: 10, values: [] });

@@ -9,5 +9,6 @@ module.exports = {
     debug: process.env.NODE_ENV == "development",
     telegramToken: process.env.TELEGRAM_TOKEN,
     telegramChatId: process.env.TELEGRAM_CHAT_ID,
+    telegramCommandToken: process.env.TELEGRAM_COMMAND_TOKEN,
   },
 };
