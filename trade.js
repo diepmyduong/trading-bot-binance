@@ -162,7 +162,7 @@ function logTrading(order, profit) {
   tradeLogger.info(
     `[${order.symbol}][${order.datetime}] ${order.side} Price: ${
       order.average || order.price
-    } Qty: ${order.amount} Filled: ${order.filled} Fee: ${get(order, "fee.cost")} Cost: ${
+    } Qty: ${order.amount} Filled: ${order.filled} Fee: ${get(order, "fee.cost", 0)} Cost: ${
       order.cost
     } ID: ${order.id} Profit: ${profit}`
   );
