@@ -7,5 +7,7 @@ module.exports = {
     testnetApiKey: process.env.TESTNET_API_KEY,
     testnetApiSecret: process.env.TESTNET_API_SECRET,
     debug: process.env.NODE_ENV == "development",
+    telegramToken: process.env.TELEGRAM_TOKEN,
+    telegramChatId: process.env.TELEGRAM_CHAT_ID,
   },
 };

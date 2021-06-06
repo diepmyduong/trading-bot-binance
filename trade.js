@@ -2,6 +2,8 @@ const winston = require("winston");
 const { binanceClient, fetchKline, BinanceSocket, BinanceOrderWatcher } = require("./binance");
 const { SMA, sma } = require("technicalindicators");
 const { last, takeRight, get } = require("lodash");
+const { TelegramTransport } = require("./telegram-transport");
+const { config } = require("./config");
 
 const logger = winston.createLogger({
   format: winston.format.simple(),
@@ -10,6 +12,7 @@ const logger = winston.createLogger({
     new winston.transports.File({
       filename: `logs/${process.env.BOT_NAME}.log`,
     }),
+    new TelegramTransport({}, { token: config.telegramToken, chatId: config.telegramChatId }),
   ],
 });
 
@@ -19,6 +22,7 @@ const tradeLogger = winston.createLogger({
     new winston.transports.File({
       filename: `logs/${process.env.BOT_NAME}-trade.log`,
     }),
+    new TelegramTransport({}, { token: config.telegramToken, chatId: config.telegramChatId }),
   ],
 });
 
@@ -32,20 +36,26 @@ const klineLogger = winston.createLogger({
 });
 
 (async function run() {
-  const config = setConfig();
+  const tradeConfig = setConfig();
   var isHolding = false;
   var buyOrder;
   var sellOrder;
-  var capital = config.capital;
+  var capital = tradeConfig.capital;
   // Validate Symbol
-  await validateConfigTicker(config);
+  await validateConfigTicker(tradeConfig);
   // Load account balance
-  await validateAccountBalance(config);
-  const symbol = `${config.asset}${config.base}`.toUpperCase();
+  await validateAccountBalance(tradeConfig);
+  const symbol = `${tradeConfig.asset}${tradeConfig.base}`.toUpperCase();
 
-  const { barsLong, barsShort } = await fetchInitBarData(symbol, config);
-  var tfLongSocket = new BinanceSocket(`${config.asset}${config.base}`, config.tfLong);
-  var tfShortSocket = new BinanceSocket(`${config.asset}${config.base}`, config.tfShort);
+  const { barsLong, barsShort } = await fetchInitBarData(symbol, tradeConfig);
+  var tfLongSocket = new BinanceSocket(
+    `${tradeConfig.asset}${tradeConfig.base}`,
+    tradeConfig.tfLong
+  );
+  var tfShortSocket = new BinanceSocket(
+    `${tradeConfig.asset}${tradeConfig.base}`,
+    tradeConfig.tfShort
+  );
   tfLongSocket.on("data", (bar) => {
     if (last(barsLong).time == bar.time) {
       barsLong[barsLong.length - 1] = bar;
@@ -83,19 +93,19 @@ Bar Long Close: ${barLong.close} > SMA Long: ${smaLong}
 Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar.close}
             `);
           if (sellOrder) {
-            const fetchSellOrder = await binanceClient.fetchOrder(sellOrder.id, config.symbol);
+            const fetchSellOrder = await binanceClient.fetchOrder(sellOrder.id, tradeConfig.symbol);
             if (fetchSellOrder.status == "open") {
               await binanceClient.cancelOrder(fetchSellOrder.id).catch((err) => {});
             }
             sellOrder = null;
           }
           const price = barShort.close;
-          const qty = config.capital / barShort.close;
-          buyOrder = await binanceClient.createLimitBuyOrder(config.symbol, qty, price);
+          const qty = tradeConfig.capital / barShort.close;
+          buyOrder = await binanceClient.createLimitBuyOrder(tradeConfig.symbol, qty, price);
           var wacher = new BinanceOrderWatcher(buyOrder);
           wacher.on("data", async (order) => {
             logTrading(order);
-            await validateAccountBalance(config);
+            await validateAccountBalance(tradeConfig);
           });
           isHolding = true;
           logger.info(`
@@ -109,7 +119,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
 Ready to Sell With Info
 Pre Bar Close: ${preBar.close} < SMA Short: ${smaShort2}
             `);
-          const fetchBuyOrder = await binanceClient.fetchOrder(buyOrder.id, config.symbol);
+          const fetchBuyOrder = await binanceClient.fetchOrder(buyOrder.id, tradeConfig.symbol);
           if (fetchBuyOrder.status == "open") {
             await binanceClient.cancelOrder(fetchBuyOrder.id).catch((err) => {});
           }
@@ -121,12 +131,12 @@ Pre Bar Close: ${preBar.close} < SMA Short: ${smaShort2}
           if (buyQty == 0) {
             logger.info(`Nothing to sell: Prev Buy Order Filled Qty is Zero`);
           } else {
-            sellOrder = await binanceClient.createLimitSellOrder(config.symbol, buyQty, price);
+            sellOrder = await binanceClient.createLimitSellOrder(tradeConfig.symbol, buyQty, price);
             var wacher = new BinanceOrderWatcher(sellOrder);
             wacher.on("data", async (order) => {
               const profit = ((order.price - buyAvgPrice) / buyAvgPrice) * 100;
               logTrading(order, profit.toFixed(4));
-              await validateAccountBalance(config);
+              await validateAccountBalance(tradeConfig);
             });
             logger.info(`
 [${sellOrder.id}] Sell Order Qty: ${sellOrder.amount} - Price: ${sellOrder.price} - Filled: ${sellOrder.filled} - Cost: ${sellOrder.cost}
@@ -148,21 +158,13 @@ function logBar(lastBar) {
   );
 }
 
-function logConfirmTrading(order, capitalProfit) {
-  tradeLogger.info(
-    `[Confirm] ${order.side} Price: ${order.average || order.price} Qty: ${order.amount} Filled: ${
-      order.filled
-    } Cost: ${order.cost} CapitalProfit: ${capitalProfit}`
-  );
-}
-
 function logTrading(order, profit) {
   tradeLogger.info(
-    `[${order.datetime}] ${order.side} Price: ${order.average || order.price} Qty: ${
-      order.amount
-    } Filled: ${order.filled} Fee: ${get(order, "fee.cost")} Cost: ${order.cost} ID: ${
-      order.id
-    } Profit: ${profit}`
+    `[${order.symbol}][${order.datetime}] ${order.side} Price: ${
+      order.average || order.price
+    } Qty: ${order.amount} Filled: ${order.filled} Fee: ${get(order, "fee.cost")} Cost: ${
+      order.cost
+    } ID: ${order.id} Profit: ${profit}`
   );
 }
 
