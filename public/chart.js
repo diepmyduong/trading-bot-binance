@@ -3,7 +3,7 @@
 const binanceConfig = {
   mainnet: "wss://stream.binance.com:9443/ws",
   testnet: "wss://testnet.binance.vision/ws",
-  debug: true,
+  debug: false,
 };
 
 class EventEmitter {

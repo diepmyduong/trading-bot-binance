@@ -152,7 +152,7 @@ bot.onText(/^\/order (\S+)$/, async (msg, match) => {
     ];
   });
 
-  const sumProfit = sumBy(rows, (r) => parseFloat(r[6]));
+  const sumProfit = sumBy(rows, (r) => (r[7] == "closed" ? parseFloat(r[6]) : 0));
   const tableMsg = table(
     [
       ["Thời gian", "Lệnh", "Giá", "Khớp / SL", "USD", "Fee", "Profit", "Trạng thái"],
