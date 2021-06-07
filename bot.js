@@ -59,7 +59,7 @@ class TradingBot extends EventEmitter {
 
   async start() {
     try {
-      logger.info(`Start Bot with symbol ${this.symbol}.
+      this.logger.info(`Start Bot with symbol ${this.symbol}.
 Capital: ${this.capital}$
 Time Frame: ${this.tfLong} : ${this.tfShort}`);
       await this.validateTicker();
