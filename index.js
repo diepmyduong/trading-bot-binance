@@ -29,7 +29,11 @@ app.post("/api/order/buy", async (req, res) => {
   try {
     const { asset, base, price, balance } = req.body;
     const qty = Math.floor(balance / price);
-    const order = await binanceClient.createLimitBuyOrder(`${asset}/${base}`, qty, price);
+    // const order = await binanceClient.createLimitBuyOrder(`${asset}/${base}`, qty, price);
+    console.log("balance, price", balance, price, qty);
+    const order = await binanceClient.createMarketOrder(`${asset}/${base}`, "buy", qty, price, {
+      quoteOrderQty: balance,
+    });
     res.json(order);
   } catch (err) {
     console.log("buy error", err.message);
@@ -49,13 +53,20 @@ app.post("/api/order/sell", async (req, res) => {
     //   assetFree,
     //   price
     // );
-    const order = await await binanceClient.createOrder(
+    // const order = await await binanceClient.createOrder(
+    //   `${asset}/${base}`,
+    //   "STOP_LOSS_LIMIT",
+    //   "sell",
+    //   assetFree,
+    //   price * 0.998,
+    //   { stopPrice: price * 0.999 }
+    // );
+    console.log(assetFree, price, { quoteOrderQty: assetFree * price });
+    const order = await await binanceClient.createMarketOrder(
       `${asset}/${base}`,
-      "STOP_LOSS_LIMIT",
       "sell",
-      assetFree,
-      price * 1.001,
-      { stopPrice: price * 0.999 }
+      assetFree * 0.99999,
+      price
     );
     res.json(order);
   } catch (err) {

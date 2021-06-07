@@ -120,13 +120,10 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
                 buyPrice = fetchBuyOrder.average;
                 this.buyOrder = null;
               }
-              this.sellOrder = await binanceClient.createOrder(
+              this.sellOrder = await binanceClient.createLimitSellOrder(
                 this.symbol,
-                "STOP_LOSS_LIMIT",
-                "sell",
                 sellQty,
-                sellPrice * 1.001,
-                { stopPrice: sellPrice * 0.999 }
+                sellPrice * 0.9999
               );
               var wacher = new BinanceOrderWatcher(this.sellOrder);
               wacher.on("data", (order) => {
