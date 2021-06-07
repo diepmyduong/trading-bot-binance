@@ -61,7 +61,13 @@ bot.onText(/^\/delete (\S+)$/, (msg, match) => {
     bot.sendMessage(msg.chat.id, `Đã xoá bot ${name}`);
   });
 });
-
+bot.onText(/^\/restart (\S+)$/, (msg, match) => {
+  const name = match[1];
+  pm2.restart(name, (err) => {
+    if (err) return bot.sendMessage(msg.chat.id, err.message);
+    bot.sendMessage(msg.chat.id, `Đã restart bot ${name}`);
+  });
+});
 bot.onText(/^\/add$/, async (msg, match) => {
   const apps = await getApps();
   bot.sendMessage(msg.chat.id, `Hãy đặt tên cho Bot?`);
@@ -106,7 +112,7 @@ bot.onText(/^\/add$/, async (msg, match) => {
           TF_LONG: config.tfLong,
           TF_SHORT: config.tfShort,
         },
-        script: "trade-v2.js",
+        script: "trade.js",
         name: config.botName,
       });
     });
