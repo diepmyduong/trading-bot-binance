@@ -64,6 +64,16 @@ bot.onText(/^\/restart (\S+)$/, (msg, match) => {
     bot.sendMessage(msg.chat.id, `Đã restart bot ${name}`);
   });
 });
+bot.onText(/^\/restart all$/, (msg, match) => {
+  const name = match[1];
+  const apps = await getApps();
+  apps.forEach(app => {
+    pm2.restart(app.name, (err) => {
+      if (err) return bot.sendMessage(msg.chat.id, err.message);
+    });
+  })
+  bot.sendMessage(msg.chat.id, `Đã restart tất cả`);
+});
 bot.onText(/^\/add$/, async (msg, match) => {
   const apps = await getApps();
   bot.sendMessage(msg.chat.id, `Hãy đặt tên cho Bot?`);
