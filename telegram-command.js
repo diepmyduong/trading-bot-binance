@@ -30,16 +30,19 @@ bot.onText(/^\/status$/, (msg) => {
   pm2.list((err, list) => {
     const apps = list.filter((a) => a.pm2_env.BOT_NAME);
     if (apps.length == 0) return bot.sendMessage(msg.chat.id, `Chưa có bot nào được tạo.`);
-    const 
-    const tableMsg = table(
-      [
-        ["STT", "BOT", "Symbol", "Vốn", "TimeFrame", "Status"],
-        ...apps.map((app, index) => [index + 1, app.pm2_env.BOT_NAME, `${app.pm2_env.ASSET}/${app.pm2_env.BASE}`, `${app.pm2_env.CAPITAL}$`, `${app.pm2_env.TF_LONG}:${app.pm2_env.TF_SHORT}`, app.pm2_env.status] )
-      ],
-    );
-    bot.sendMessage(msg.chat.id, tableMsg);
+    const tableMsg = table([
+      ["STT", "BOT", "Symbol", "Vốn", "TimeFrame", "Status"],
+      ...apps.map((app, index) => [
+        index + 1,
+        app.pm2_env.BOT_NAME,
+        `${app.pm2_env.ASSET}/${app.pm2_env.BASE}`,
+        `${app.pm2_env.CAPITAL}$`,
+        `${app.pm2_env.TF_LONG}:${app.pm2_env.TF_SHORT}`,
+        app.pm2_env.status,
+      ]),
+    ]);
+    return bot.sendMessage(msg.chat.id, `<pre>${tableMsg}</pre>`, { parse_mode: "HTML" });
   });
-  
 });
 
 bot.onText(/^\/stop (\S+)$/, (msg, match) => {
@@ -64,14 +67,13 @@ bot.onText(/^\/restart (\S+)$/, (msg, match) => {
     bot.sendMessage(msg.chat.id, `Đã restart bot ${name}`);
   });
 });
-bot.onText(/^\/restart all$/, (msg, match) => {
-  const name = match[1];
+bot.onText(/^\/restart all$/, async (msg, match) => {
   const apps = await getApps();
-  apps.forEach(app => {
+  apps.forEach((app) => {
     pm2.restart(app.name, (err) => {
       if (err) return bot.sendMessage(msg.chat.id, err.message);
     });
-  })
+  });
   bot.sendMessage(msg.chat.id, `Đã restart tất cả`);
 });
 bot.onText(/^\/add$/, async (msg, match) => {
@@ -128,15 +130,13 @@ bot.onText(/^\/balance$/, async (msg, match) => {
   const apps = await getApps();
   const assets = uniq([...apps.map((a) => a.pm2_env.ASSET), ...apps.map((a) => a.pm2_env.BASE)]);
   const balances = await binanceClient.fetchBalance();
-  const tableMsg = table(
-    [
-      ["STT", "Asset", "Free", "Locked"],
-      ...balances.info.balances
+  const tableMsg = table([
+    ["STT", "Asset", "Free", "Locked"],
+    ...balances.info.balances
       .filter((b) => assets.includes(b.asset))
-      .map((a, index) => [index + 1, a.asset, a.free, a.locked])
-    ],
-  );
-  return bot.sendMessage(msg.chat.id,tableMsg);
+      .map((a, index) => [index + 1, a.asset, a.free, a.locked]),
+  ]);
+  return bot.sendMessage(msg.chat.id, `<pre>${tableMsg}</pre>`, { parse_mode: "HTML" });
 });
 
 bot.onText(/^\/order (\S+)$/, async (msg, match) => {
@@ -185,7 +185,6 @@ bot.onText(/^\/order (\S+)$/, async (msg, match) => {
       ],
     }
   );
-  console.log("tableMsg", tableMsg);
   return bot.sendMessage(msg.chat.id, `<pre>${tableMsg}</pre>`, { parse_mode: "HTML" });
 });
 
