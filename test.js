@@ -1,21 +1,33 @@
 const { scan } = require("./scanner");
-const { sma } = require("technicalindicators");
-const { last, first, takeRight } = require("lodash");
+const { sma, ema, macd } = require("technicalindicators");
+const { last, first, takeRight, random, times } = require("lodash");
 const { binanceClient } = require("./binance");
 const pm2 = require("pm2");
 
-pm2.list((err, list) => {
-  for (const app of list) {
-    if (!app.pm2_env.BOT_NAME) continue;
-    console.log(`
-BOT: ${app.pm2_env.BOT_NAME}
-Symbol: ${app.pm2_env.ASSET}/${app.pm2_env.BASE}
-Vốn: ${app.pm2_env.CAPITAL}$
-TimeFrame: ${app.pm2_env.TF_LONG}:${app.pm2_env.TF_SHORT}
-Status: ${app.pm2_env.status}`);
-  }
-  //   console.log("list", list);
-});
+var a = times(35, random);
+console.log(
+  macd({
+    fastPeriod: 12,
+    slowPeriod: 26,
+    signalPeriod: 9,
+    SimpleMASignal: false,
+    SimpleMAOscillator: false,
+    values: a,
+  })
+);
+
+// pm2.list((err, list) => {
+//   for (const app of list) {
+//     if (!app.pm2_env.BOT_NAME) continue;
+//     console.log(`
+// BOT: ${app.pm2_env.BOT_NAME}
+// Symbol: ${app.pm2_env.ASSET}/${app.pm2_env.BASE}
+// Vốn: ${app.pm2_env.CAPITAL}$
+// TimeFrame: ${app.pm2_env.TF_LONG}:${app.pm2_env.TF_SHORT}
+// Status: ${app.pm2_env.status}`);
+//   }
+//   //   console.log("list", list);
+// });
 
 // pm2.start({
 //   env: {

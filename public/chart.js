@@ -1,5 +1,9 @@
 "use strict";
 
+// const { MACD } = require("technicalindicators");
+
+// const { EMA } = require("technicalindicators");
+
 const binanceConfig = {
   mainnet: "wss://stream.binance.com:9443/ws",
   testnet: "wss://testnet.binance.vision/ws",
@@ -24,7 +28,7 @@ class EventEmitter {
 
 class CandleChart extends EventEmitter {
   tradingMarkers = [];
-  constructor({ element, symbol, interval, period = 1000 }) {
+  constructor({ element, symbol, interval, period = 1000, barPrice = false }) {
     super();
     this.element = element;
     this.symbol = symbol;
@@ -54,8 +58,9 @@ class CandleChart extends EventEmitter {
       },
     });
     this.indicators = [
-      new PriceIndicator({ chart: this }),
+      barPrice ? new PriceBarIndicator({ chart: this }) : new PriceIndicator({ chart: this }),
       new SMAIndicator({ chart: this, period: 10 }),
+      new ISIndicator({ chart: this }),
     ];
     this.fetchKline();
     this.startWebsocket();
@@ -191,6 +196,28 @@ class PriceIndicator extends Indicator {
   }
 }
 
+class PriceBarIndicator extends Indicator {
+  constructor({ chart }) {
+    super(chart);
+    this.series = this.candleChart.chart.addBarSeries({
+      upColor: "rgb(38,166,154)",
+      downColor: "rgb(255,82,82)",
+      wickUpColor: "rgb(38,166,154)",
+      wickDownColor: "rgb(255,82,82)",
+      borderVisible: false,
+    });
+  }
+
+  setData(bars) {
+    this.data = bars;
+    this.series.setData(bars);
+  }
+  update(bar) {
+    this.updateData(bar);
+    this.series.update(bar);
+  }
+}
+
 class SMAIndicator extends Indicator {
   constructor({ chart, period, color = "rgba(4, 111, 232, 1)", price = "close" }) {
     super(chart);
@@ -215,6 +242,91 @@ class SMAIndicator extends Indicator {
     this.series.setData(smaData);
   }
 
+  update(bar) {
+    if (this.bars.length >= this.period) {
+      const len = this.bars.length;
+      const bars = this.bars.slice(len - this.period, len);
+      const smaValues = sma({
+        period: this.period,
+        values: bars.map((b) => b[this.price]),
+      });
+      const smaData = { time: bar.time, value: smaValues[0] };
+      this.updateData(smaData);
+      this.series.update(smaData);
+    }
+  }
+}
+
+class ISIndicator extends Indicator {
+  colors = [];
+  constructor({ chart }) {
+    super(chart);
+    this.series = this.candleChart.chart.addBarSeries({
+      upColor: "rgb(38,166,154)",
+      downColor: "rgb(255,82,82)",
+      wickUpColor: "rgb(38,166,154)",
+      wickDownColor: "rgb(255,82,82)",
+      borderVisible: false,
+    });
+  }
+
+  setData(bars) {
+    console.log("setData", bars);
+    this.data = bars;
+    this.series.setData(bars);
+    this.ema13 = new EMA({ period: 13, values: [] });
+    this.macd = new MACD({
+      fastPeriod: 12,
+      slowPeriod: 26,
+      signalPeriod: 9,
+      SimpleMASignal: false,
+      SimpleMAOscillator: false,
+      values: [],
+    });
+    this.ema13Values = [];
+    this.macdValues = [];
+    this.markers = [];
+    for (const b of bars) {
+      const ema13 = this.ema13.nextValue(b.close);
+      const macd = this.macd.nextValue(b.close);
+      const lastEma13 = this.ema13Values[this.ema13Values.length - 1];
+      const lastMACD = this.macdValues[this.macdValues.length - 1];
+      this.ema13Values.push(ema13);
+      this.macdValues.push(macd);
+      let color;
+      if (ema13 && macd && macd.histogram && lastMACD && lastMACD.histogram && lastEma13) {
+        // console.log("sma13 > lastEma13", ema13 > lastEma13);
+        // console.log("macd.histogram > lastMACD.histogram", macd.histogram > lastMACD.histogram);
+        // console.log("macd.MACD > lastMACD.MACD", macd.MACD > lastMACD.MACD);
+        const isScreen =
+          ema13 > lastEma13 && macd.histogram > lastMACD.histogram && macd.MACD > lastMACD.MACD;
+        const isRed =
+          ema13 < lastEma13 && macd.histogram < lastMACD.histogram && macd.MACD < lastMACD.MACD;
+        const isYellow = !isScreen && !isRed;
+        const isAqua = isYellow && macd.histogram > lastMACD.histogram && macd.MACD > lastMACD.MACD;
+
+        if (isScreen) {
+          color = "screen";
+        } else if (isRed) {
+          color = "red";
+        } else if (isAqua) {
+          color = "aqua";
+        } else {
+          color = "yellow";
+        }
+        this.colors.push(color);
+        this.markers.push({
+          time: b.time,
+          position: "belowBar",
+          color: color,
+          shape: "circle",
+        });
+      } else {
+        this.colors.push(color);
+      }
+    }
+    // this.series.setMarkers(this.markers);
+  }
   update(bar) {
     if (this.bars.length >= this.period) {
       const len = this.bars.length;

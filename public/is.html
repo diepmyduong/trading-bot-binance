@@ -1,0 +1,250 @@
+<html>
+    <head>
+        <title>Trading View</title>
+    </head>
+    <body>
+        <h2>Tài khoản <input id="account_list" value="BNB,USDT,ETH" placeholder="BNB,USDT,..."/><button onclick="fetchBalance()">Reload</button></h2>
+        <pre id="account"></pre>
+        <h2>Lệnh đang mở <button onclick="fetchOpenOrder()"">Reload</button><button onclick="cancelOrder()">Huỷ tất cả lệnh </button></h2>
+        <div id="open_orders"></div>
+        <h2>Cấu hình</h2>
+        <div>Symbol <input id="asset" placeholder="BNB" value="BNB"/>/<input id="base" placeholder="USDT" value="USDT" /> <button onclick="run()" id>Trade</button></div>
+        <div>Time Frame Dài <input id="tf_long" placeholder="15m" value="1d" /> Số nến: <input type="number" id="tf_long_period" placeholder="100" value="50"/></div>
+        <div>Time Frame Ngắn <input id="tf_short" placeholder="5m" value="1h" /> Số nến: <input type="number" id="tf_short_period" placeholder="260" value="180"/></div>
+        <h2>Đặt lệnh</h2>
+        <div>Số tiền: <input type="number" id="order_balance"/> Giá: <input id="order_price" /> <button onclick="getCurrentPrice()">Giá hiện tại</button><button onclick="order('buy')">Mua</button><button onclick="order('sell')">Bán</button></div>
+        <pre id="order"></pre>
+        <h2>Khung 1 Ngày</h2>
+        <div id="chart-1d"></div>
+        <h2>Khung 1 Giờ</h2>
+        <div id="chart-1h"></div>
+        <h2>Trade Log</h2>
+        <h3>Balance <span id="balance"></span></h3>
+        <pre id="logs"></pre>
+        <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3.1.0/dist/browser.es6.js" integrity="sha256-R9YL+ZtF/v+CbnaDyUnlKcvl814aC4LqLayQi2wOSFI=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
+        <script src="chart.js"></script>
+        <script src="account.js"></script>
+        <script>
+            
+            var chart1d, chart1h;
+            function getSysmbol() {
+                const asset = document.getElementById("asset").value;
+                const base = document.getElementById("base").value;
+                return {
+                    symbol: asset + base,
+                    asset: asset,
+                    base: base
+                }
+            }
+            function run() {
+                if (chart1d) {
+                    chart1d.destroy();
+                    chart1d = null;
+                }
+                if (chart1h) {
+                    chart1h.destroy();
+                    chart1h = null;
+                }
+                
+                let isHold = false;
+                let buyPrice = 0;
+                let balance = 1000;
+                let balanceProfit = 0;
+                let win = 0;
+                let close = 0;
+                let maxWin = 0;
+                let maxLost = 0;
+                const logs = [];
+
+                let symbol = getSysmbol().symbol;
+                if (symbol == "") {
+                    alert('chưa nhập Symbol');
+                    return;
+                }
+                let tf_long = document.getElementById('tf_long').value;
+                let tf_short = document.getElementById('tf_short').value;
+                let tf_long_period = document.getElementById('tf_long_period').value;
+                let tf_short_period = document.getElementById('tf_short_period').value;
+                if (tf_long == "" || tf_short == "" || tf_long_period == "" || tf_short_period == "") {
+                    alert('Chưa nhâp timeframe');
+                }
+                chart1d = new CandleChart({
+                    element: document.getElementById("chart-1d"),
+                    symbol: symbol,
+                    interval: tf_long,
+                    period: parseInt(tf_long_period)
+                });
+                chart1h = new CandleChart({
+                    element: document.getElementById("chart-1h"),
+                    symbol: symbol,
+                    interval: tf_short,
+                    period: parseInt(tf_short_period)
+                });
+                const setBalance = () => {
+                    balanceProfit = ((balance / 1000) - 1) * 100
+                    document.getElementById('balance').innerText = `${balance}$ Profit: ${balanceProfit.toFixed(2)}%
+                    Win/Close: ${win}/${close} WinRate: ${((win / (win + close)) * 100).toFixed(2)}%
+                    Max Profit: ${maxWin.toFixed(4)}$ Max Lost: ${maxLost.toFixed(4)}$`
+                };
+
+                chart1h.on('data', (bar) => {
+                    const bars_1d = chart1d.bars.slice(chart1d.bars.length - 10, chart1d.bars.length);
+                    var sma10_1d = sma({ period: 10, values: bars_1d.map(b => b.close )})[0];
+                    const bars_1h = chart1h.bars.slice(chart1h.bars.length - 11, chart1h.bars.length);
+                    const preBar = chart1h.prev(1);
+                    var sma10_1h = sma({ period: 10, values: bars_1h.map(b => b.close )})[0];
+                    // console.log('=====>')
+                    // console.log('sma10_1d', sma10_1d);
+                    // console.log('chart1d.currentBar.close', chart1d.currentBar.close);
+                    // console.log('preBar.low', preBar.low);
+                    // console.log('preBar.close', preBar.close);
+                    // console.log('sma10_1h', sma10_1h);
+                    // console.log('<=====')
+                    if (isHold == false) {
+                        if (chart1d.currentBar.close > sma10_1d) {
+                            if (preBar.low < sma10_1h && preBar.close > sma10_1h) {
+                                chart1h.buy(chart1h.currentBarIndex);
+                            }
+                        }
+                    } else {
+                        if (preBar.close < sma10_1h) {
+                            chart1h.sell(chart1h.currentBarIndex);
+                        }
+                    }
+                })
+                chart1h.on('trade', ({ type, barIndex, bar, price }) => {
+                    console.log('trade', { type, barIndex, bar, price });
+                    let changePrice = 0;
+                    let profitPer = 0;
+                    let profit = 0 ;
+                    if (type == "buy") {
+                        isHold = true;
+                        buyPrice = price;
+                    } else {
+                        isHold = false;
+                        changePrice = price - buyPrice;
+                        profitPer = changePrice / buyPrice * 100;
+                        profit = (balance * (changePrice / buyPrice));
+                        balance = balance + profit;
+                        buyPrice = 0;
+                        if (profit > 0) {
+                            win++;
+                            maxWin = Math.max(maxWin, profit);
+                        } else {
+                            close++;
+                            maxLost = Math.min(maxLost, profit);
+                        }
+                    }
+                    logs.push({ type, barIndex, price, profit, profitPer, bar });
+                    
+                    setBalance();
+                    document.getElementById('logs').innerText = logs.map(l => `[${new Date(l.bar.time * 1000).toDateString()}] ${l.type} - Price: ${l.price} - Profit: ${l.profit.toFixed(4)}$ - ${l.profitPer.toFixed(4)}}`).join('\n');
+                }) 
+                chart1h.on('setData', async (bars) => {
+                    // return;
+                    const delay = (n) => new Promise((resolve, reject) => setTimeout(resolve, n));
+                    await delay(2000);
+                    var colorLong;
+                    var j = 0;
+                    for (var i = 0; i < bars.length; i++) {
+                        const bar = bars[i];
+                        const colorShort = chart1h.indicators[2].colors[i];
+                        const preColorShort = chart1h.indicators[2].colors[i - 1];
+                        if (!isHold) {
+                                // Buy
+                                const cond1 = preColorShort == 'screen' || preColorShort == 'aqua';
+                                console.log('preColorShort', preColorShort);
+                                if (cond1) {
+                                    var bar_1d = j == 0 ? chart1d.bars[0] : chart1d.bars[j];
+                                    while(chart1d.bars[j + 1] && chart1d.bars[j + 1].time <= bar.time) {
+                                        colorLong = chart1d.indicators[2].colors[j + 1];
+                                        j++;
+                                    }
+                                    const cond3 = colorLong == 'screen';
+                                    if (cond3) {
+                                        chart1h.buy(i);
+                                    }
+                                }
+                        } else {
+                            // Sale
+                            if (preColorShort == "red")  {
+                                chart1h.sell(i);
+                            }
+                        }
+                    }
+                })
+            }
+            
+        </script>
+        <script>
+            function fetchBalance() {
+                getBalance().then(balance => {
+                    const accountList = document.getElementById('account_list').value.split(',').map(t => t.trim());
+
+                    document.getElementById('account').innerText = balance.info.balances.filter(a => accountList.includes(a.asset)).map(a => `${a.asset}: Free (${a.free}) - Locked: (${a.locked})`).join('\n');
+                })
+            }
+            
+            function order(type) {
+                const { symbol, asset, base } = getSysmbol();
+                const balance = parseInt(document.getElementById('order_balance').value);
+                const price = parseFloat(document.getElementById('order_price').value);
+                try {
+                    switch (type) {
+                        case 'buy':
+                            return orderBuy({ asset, base, price, balance }).then(order => {
+                                console.log('buy', order);
+                                document.getElementById('order').innerText = `Đã đặt lệnh`;
+                                fetchOpenOrder();
+                            });
+                        case 'sell':
+                            return orderSell({ asset, base, price }).then(order => {
+                                console.log('sell', order);
+                                document.getElementById('order').innerText = `Đã đặt lệnh`;
+                                fetchOpenOrder();
+                            });
+                    }
+                } catch (err) {
+                    document.getElementById('order').innerText = `Lỗi: ${err.message}`;
+                }
+                
+            }
+            function getCurrentPrice() {
+                document.getElementById('order_price').value =  chart1h.currentBar.close;
+            }
+            function fetchOpenOrder() {
+                const { symbol, asset, base } = getSysmbol();
+                if (symbol == "") {
+                    alert("Chưa cấu hình symbol");
+                    return;
+                }
+                getOpenOrders({asset, base}).then(orders => {
+                    const table = document.createElement('table');
+                    const thead = document.createElement('thead');
+                    thead.innerHTML = ["Thời gian","Lệnh","SL Khớp","Giá","Giá TB", "Đã chi", "Trạng thái"].map(t => `<td width="200">${t}</td>`).join('\n');
+                    table.appendChild(thead);
+                    const tbody = document.createElement('tbody');
+                    orders.forEach(o => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = [o.datetime.substr(0, 10), o.side, `${o.filled}/${o.amount}`, o.price, o.average, o.cost, o.status].map(t => `<td>${t}</td>`).join('\n');
+                        tbody.appendChild(tr);
+                    })
+                    table.appendChild(tbody);
+                    console.log('orders', orders);
+                    document.getElementById('open_orders').innerHTML = null;
+                    document.getElementById('open_orders').appendChild(table);
+                })
+            }
+            function cancelOrder() {
+                const { asset, base } = getSysmbol();
+                cancelAllOrders({ asset, base }).then(res => {
+                    console.log('cancel Order', res);
+                    document.getElementById('order').innerText = `Đã huỷ tất cả lệnh`;
+                    fetchOpenOrder();
+                })
+            }
+        </script>   
+    </body>
+</html>

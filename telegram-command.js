@@ -30,20 +30,16 @@ bot.onText(/^\/status$/, (msg) => {
   pm2.list((err, list) => {
     const apps = list.filter((a) => a.pm2_env.BOT_NAME);
     if (apps.length == 0) return bot.sendMessage(msg.chat.id, `Chưa có bot nào được tạo.`);
-    bot.sendMessage(
-      msg.chat.id,
-      apps
-        .map(
-          (app) => `
-    BOT: ${app.pm2_env.BOT_NAME}
-    Symbol: ${app.pm2_env.ASSET}/${app.pm2_env.BASE}
-    Vốn: ${app.pm2_env.CAPITAL}$
-    TimeFrame: ${app.pm2_env.TF_LONG}:${app.pm2_env.TF_SHORT}
-    Status: ${app.pm2_env.status}`
-        )
-        .join("\n")
+    const 
+    const tableMsg = table(
+      [
+        ["STT", "BOT", "Symbol", "Vốn", "TimeFrame", "Status"],
+        ...apps.map((app, index) => [index + 1, app.pm2_env.BOT_NAME, `${app.pm2_env.ASSET}/${app.pm2_env.BASE}`, `${app.pm2_env.CAPITAL}$`, `${app.pm2_env.TF_LONG}:${app.pm2_env.TF_SHORT}`, app.pm2_env.status] )
+      ],
     );
+    bot.sendMessage(msg.chat.id, tableMsg);
   });
+  
 });
 
 bot.onText(/^\/stop (\S+)$/, (msg, match) => {
@@ -122,13 +118,15 @@ bot.onText(/^\/balance$/, async (msg, match) => {
   const apps = await getApps();
   const assets = uniq([...apps.map((a) => a.pm2_env.ASSET), ...apps.map((a) => a.pm2_env.BASE)]);
   const balances = await binanceClient.fetchBalance();
-  return bot.sendMessage(
-    msg.chat.id,
-    balances.info.balances
+  const tableMsg = table(
+    [
+      ["STT", "Asset", "Free", "Locked"],
+      ...balances.info.balances
       .filter((b) => assets.includes(b.asset))
-      .map((a) => `${a.asset}: Free (${a.free}) - Locked: (${a.locked})`)
-      .join("\n")
+      .map((a, index) => [index + 1, a.asset, a.free, a.locked])
+    ],
   );
+  return bot.sendMessage(msg.chat.id,tableMsg);
 });
 
 bot.onText(/^\/order (\S+)$/, async (msg, match) => {
