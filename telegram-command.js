@@ -160,6 +160,85 @@ bot.onText(/^\/order2 (\S+)/, async (msg, match) => {
   return bot.sendPhoto(msg.chat.id, image);
 });
 
+bot.onText(/^\/stats/, async (msg, match) => {
+  const apps = await getApps();
+  var buy = 0;
+  var sell = 0;
+  var orderCount = 0;
+  var profit = 0;
+  var row = [];
+  for (var i = 0; i < apps.length; i++) {
+    var app = apps[i];
+    var asset = app.pm2_env.ASSET;
+    var base = app.pm2.env.BASE;
+    var capital = parseFloat(app.pm2_env.CAPITAL);
+    var botName = app.pm2.env.BOT_NAME;
+    var market = await getMarket(botName, asset, base);
+  }
+  const data = require("./data.json");
+  for (market of Object.values(data.markets)) {
+    var marketProfit = market.sellCost - market.buyCost;
+    buy += market.buyCost;
+    sell += market.sellCost;
+    profit += marketProfit;
+    orderCount += market.orderCount;
+    row.push([
+      i + 1,
+      market.asset,
+      market.orderCount,
+      market.buyCost,
+      market.sellCost,
+      marketProfit,
+      capital,
+      (marketProfit / capital).toFixed(4),
+    ]);
+  }
+  const tableMsg = table(
+    [["STT", "BOT", "Order", "Buy($)", "Sell($)", "Profit($)", "Vốn($)", "Profit(%)"], ...row],
+    {
+      header: {
+        alignment: "center",
+        content: `Thống kê Lãi lỗ\nMua ($): ${buy}$\nBán ($): ${sell}$\nProfit ($): ${profit}`,
+      },
+    }
+  );
+  return bot.sendMessage(msg.chat.id, `<pre>${tableMsg}</pre>`, { parse_mode: "HTML" });
+});
+
+async function getMarket(botName, asset, base) {
+  var data = require("./data.json");
+  var market = get(data.markets, botName);
+  if (!market) {
+    market = {
+      asset: asset,
+      base: base,
+      buyCost: 0,
+      sellCost: 0,
+      orderCount: 0,
+      fromOrderId: null,
+      timestamp: null,
+    };
+    set(data.markets, botName, market);
+    writeJSON(data);
+  }
+  const orders = market.timestamp
+    ? await binanceClient.fetchOrders(`${asset}/${base}`, market.timestamp + 1)
+    : await binanceClient.fetchOrders(`${asset}/${base}`);
+  for (const o of orders) {
+    if (o.status == "open") break;
+    market.orderCount++;
+    market.fromOrderId = o.id;
+    market.timestamp = o.timestamp;
+    if (o.side == "buy") {
+      market.buyCost += o.cost + get(o, "fee.cost", 0);
+    } else {
+      market.sellCost += o.cost + get(o, "fee.cost", 0);
+    }
+  }
+  writeJSON(data);
+  return market;
+}
+
 async function getOrderTableText(app, opts = {}) {
   const symbol = `${app.pm2_env.ASSET}/${app.pm2_env.BASE}`;
   const orders = await binanceClient.fetchOrders(symbol);
@@ -222,4 +301,9 @@ async function getApps() {
   return await new Promise((resolve, reject) => pm2.list((err, list) => resolve(list))).then(
     (list) => list.filter((a) => a.pm2_env.BOT_NAME)
   );
+}
+
+function writeJSON(data, cb) {
+  const writeStream = fs.createWriteStream("data.json");
+  writeStream.write(Buffer.from(JSON.stringify(data, null, 2)), cb);
 }

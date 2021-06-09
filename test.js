@@ -1,28 +1,54 @@
 const { scan } = require("./scanner");
 const { sma, ema, macd } = require("technicalindicators");
-const { last, first, takeRight, random, times } = require("lodash");
+const { last, first, takeRight, random, times, get, set } = require("lodash");
 const { binanceClient } = require("./binance");
 const pm2 = require("pm2");
 const { table } = require("table");
 const textToImage = require("text-to-image");
 const nodeHtmlToImage = require("node-html-to-image");
+const fs = require("fs");
 
 (async () => {
-  const assets = ["USDT", "BNB", "NBS", "MU"];
-  const balances = await binanceClient.fetchBalance();
-  const tableMsg = table([
-    ["STT", "Asset", "Free", "Locked"],
-    ...balances.info.balances
-      .filter((b) => assets.includes(b.asset))
-      .map((a, index) => [index + 1, a.asset, a.free, a.locked]),
-  ]);
-  nodeHtmlToImage({
-    output: "./test.png",
-    html: `<html><head><style>body { width: 350px }</style></head><body><pre>${tableMsg}</pre></body></html>`,
-  })
-    .then(() => console.log("done"))
-    .catch((err) => console.log("error", err.message));
+  var asset = "TFUEL";
+  var base = "USDT";
+  var botName = "TFUELUSDT";
+  var data = require("./data.json");
+  var market = get(data.markets, botName);
+  if (!market) {
+    market = {
+      asset: asset,
+      base: base,
+      buyCost: 0,
+      sellCost: 0,
+      orderCount: 0,
+      fromOrderId: null,
+      timestamp: null,
+    };
+    set(data.markets, botName, market);
+    writeJSON(data);
+  }
+  console.log("timestamp", market.timestamp);
+  const orders = market.timestamp
+    ? await binanceClient.fetchOrders(`${asset}/${base}`, market.timestamp + 1)
+    : await binanceClient.fetchOrders(`${asset}/${base}`);
+  console.log("orders", orders.length);
+  for (const o of orders) {
+    market.orderCount++;
+    market.fromOrderId = o.id;
+    market.timestamp = o.timestamp;
+    if (o.side == "buy") {
+      market.buyCost += o.cost + get(o, "fee.cost", 0);
+    } else {
+      market.sellCost += o.cost + get(o, "fee.cost", 0);
+    }
+  }
+  writeJSON(data);
 })();
+
+function writeJSON(data, cb) {
+  const writeStream = fs.createWriteStream("data.json");
+  writeStream.write(Buffer.from(JSON.stringify(data, null, 2)), cb);
+}
 
 // var a = times(35, random);
 // console.log(
