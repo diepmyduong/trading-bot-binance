@@ -190,7 +190,7 @@ bot.onText(/^\/stats/, async (msg, match) => {
       market.orderCount,
       market.buyCost.toFixed(4),
       market.sellCost.toFixed(4),
-      marketProfit,
+      marketProfit.toFixed(4),
       capital,
       ((marketProfit / capital) * 100).toFixed(4),
     ]);
