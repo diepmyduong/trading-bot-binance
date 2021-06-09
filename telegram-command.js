@@ -170,9 +170,9 @@ bot.onText(/^\/stats/, async (msg, match) => {
   for (var i = 0; i < apps.length; i++) {
     var app = apps[i];
     var asset = app.pm2_env.ASSET;
-    var base = app.pm2.env.BASE;
+    var base = app.pm2_env.BASE;
     var capital = parseFloat(app.pm2_env.CAPITAL);
-    var botName = app.pm2.env.BOT_NAME;
+    var botName = app.pm2_env.BOT_NAME;
     var market = await getMarket(botName, asset, base);
   }
   const data = require("./data.json");
