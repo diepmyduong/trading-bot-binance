@@ -178,7 +178,7 @@ bot.onText(/^\/stats/, async (msg, match) => {
   }
   const data = require("./data.json");
   for (market of Object.values(data.markets)) {
-    var marketProfit = market.sellCost - market.buyCost;
+    var marketProfit = market.sellCost - market.buyCost + market.holdingCost;
     buy += market.buyCost;
     sell += market.sellCost;
     profit += marketProfit;
@@ -221,6 +221,8 @@ async function getMarket(botName, asset, base) {
       orderCount: 0,
       fromOrderId: null,
       timestamp: null,
+      isHolding: false,
+      holdingCost: 0,
     };
     set(data.markets, botName, market);
     writeJSON(data);
@@ -228,8 +230,10 @@ async function getMarket(botName, asset, base) {
   const orders = market.timestamp
     ? await binanceClient.fetchOrders(`${asset}/${base}`, market.timestamp + 1)
     : await binanceClient.fetchOrders(`${asset}/${base}`);
+  var lastOrder;
   for (const o of orders) {
     if (o.status == "open") break;
+    lastOrder = o;
     market.orderCount++;
     market.fromOrderId = o.id;
     market.timestamp = o.timestamp;
@@ -239,6 +243,17 @@ async function getMarket(botName, asset, base) {
       market.sellCost += o.cost + get(o, "fee.cost", 0);
     }
   }
+
+  if (lastOrder) {
+    if (lastOrder.side == "buy") {
+      market.isHolding = true;
+      market.holdingCost = lastOrder.cost;
+    } else {
+      market.isHolding = false;
+      market.holdingCost = 0;
+    }
+  }
+
   writeJSON(data);
   return market;
 }
