@@ -177,7 +177,8 @@ bot.onText(/^\/stats/, async (msg, match) => {
     var market = await getMarket(botName, asset, base);
   }
   const data = require("./data.json");
-  for (market of Object.values(data.markets)) {
+  for (var i = 0; i < Object.values(data.markets).length; i++) {
+    var market = Object.values(data.markets)[i];
     var marketProfit = market.sellCost - market.buyCost + market.holdingCost;
     buy += market.buyCost;
     sell += market.sellCost;
