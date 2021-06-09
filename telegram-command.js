@@ -191,7 +191,7 @@ bot.onText(/^\/stats/, async (msg, match) => {
       market.sellCost,
       marketProfit,
       capital,
-      (marketProfit / capital).toFixed(4),
+      ((marketProfit / capital) * 100).toFixed(4),
     ]);
   }
   const tableMsg = table(
