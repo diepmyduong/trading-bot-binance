@@ -188,8 +188,8 @@ bot.onText(/^\/stats/, async (msg, match) => {
       i + 1,
       market.asset,
       market.orderCount,
-      market.buyCost,
-      market.sellCost,
+      market.buyCost.toFixed(4),
+      market.sellCost.toFixed(4),
       marketProfit,
       capital,
       ((marketProfit / capital) * 100).toFixed(4),
@@ -205,7 +205,7 @@ bot.onText(/^\/stats/, async (msg, match) => {
     }
   );
   const image = await nodeHtmlToImage({
-    html: `<html><head><style>body { width: 800px }</style></head><body><pre>${tableMsg}</pre></body></html>`,
+    html: `<html><head><style>body { width: 1000px }</style></head><body><pre>${tableMsg}</pre></body></html>`,
   });
   return bot.sendPhoto(msg.chat.id, image);
 });
