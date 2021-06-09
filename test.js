@@ -3,18 +3,38 @@ const { sma, ema, macd } = require("technicalindicators");
 const { last, first, takeRight, random, times } = require("lodash");
 const { binanceClient } = require("./binance");
 const pm2 = require("pm2");
+const { table } = require("table");
+const textToImage = require("text-to-image");
+const nodeHtmlToImage = require("node-html-to-image");
 
-var a = times(35, random);
-console.log(
-  macd({
-    fastPeriod: 12,
-    slowPeriod: 26,
-    signalPeriod: 9,
-    SimpleMASignal: false,
-    SimpleMAOscillator: false,
-    values: a,
+(async () => {
+  const assets = ["USDT", "BNB", "NBS", "MU"];
+  const balances = await binanceClient.fetchBalance();
+  const tableMsg = table([
+    ["STT", "Asset", "Free", "Locked"],
+    ...balances.info.balances
+      .filter((b) => assets.includes(b.asset))
+      .map((a, index) => [index + 1, a.asset, a.free, a.locked]),
+  ]);
+  nodeHtmlToImage({
+    output: "./test.png",
+    html: `<html><head><style>body { width: 350px }</style></head><body><pre>${tableMsg}</pre></body></html>`,
   })
-);
+    .then(() => console.log("done"))
+    .catch((err) => console.log("error", err.message));
+})();
+
+// var a = times(35, random);
+// console.log(
+//   macd({
+//     fastPeriod: 12,
+//     slowPeriod: 26,
+//     signalPeriod: 9,
+//     SimpleMASignal: false,
+//     SimpleMAOscillator: false,
+//     values: a,
+//   })
+// );
 
 // pm2.list((err, list) => {
 //   for (const app of list) {

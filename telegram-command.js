@@ -6,6 +6,7 @@ const { binanceClient } = require("./binance");
 const { config } = require("./config");
 const { table } = require("table");
 const moment = require("moment-timezone");
+const nodeHtmlToImage = require("node-html-to-image");
 
 const bot = new TelegramBot(config.telegramCommandToken, { polling: true });
 bot.on("polling_error", (msg) => console.log(msg));
@@ -127,23 +128,39 @@ bot.onText(/^\/add$/, async (msg, match) => {
 });
 
 bot.onText(/^\/balance$/, async (msg, match) => {
-  const apps = await getApps();
-  const assets = uniq([...apps.map((a) => a.pm2_env.ASSET), ...apps.map((a) => a.pm2_env.BASE)]);
-  const balances = await binanceClient.fetchBalance();
-  const tableMsg = table([
-    ["STT", "Asset", "Free", "Locked"],
-    ...balances.info.balances
-      .filter((b) => assets.includes(b.asset))
-      .map((a, index) => [index + 1, a.asset, a.free, a.locked]),
-  ]);
+  const tableMsg = await getBalanceTableText();
   return bot.sendMessage(msg.chat.id, `<pre>${tableMsg}</pre>`, { parse_mode: "HTML" });
 });
 
-bot.onText(/^\/order (\S+)$/, async (msg, match) => {
+bot.onText(/^\/balance2$/, async (msg, match) => {
+  const tableMsg = await getBalanceTableText();
+  const image = await nodeHtmlToImage({
+    html: `<html><head><style>body { width: 350px }</style></head><body><pre>${tableMsg}</pre></body></html>`,
+  });
+  return bot.sendPhoto(msg.chat.id, image);
+});
+
+bot.onText(/^\/order (\S+)/, async (msg, match) => {
   const name = match[1];
   const apps = await getApps();
   const app = apps.find((a) => a.pm2_env.BOT_NAME == name);
   if (!app) return bot.sendMessage(msg.chat.id, `Tên bot không tồn tại.`);
+  const tableMsg = await getOrderTableText(app);
+  return bot.sendMessage(msg.chat.id, `<pre>${tableMsg}</pre>`, { parse_mode: "HTML" });
+});
+bot.onText(/^\/order2 (\S+)/, async (msg, match) => {
+  const name = match[1];
+  const apps = await getApps();
+  const app = apps.find((a) => a.pm2_env.BOT_NAME == name);
+  if (!app) return bot.sendMessage(msg.chat.id, `Tên bot không tồn tại.`);
+  const tableMsg = await getOrderTableText(app, { full: true });
+  const image = await nodeHtmlToImage({
+    html: `<html><head><style>body { width: 800px }</style></head><body><pre>${tableMsg}</pre></body></html>`,
+  });
+  return bot.sendPhoto(msg.chat.id, image);
+});
+
+async function getOrderTableText(app, opts = {}) {
   const symbol = `${app.pm2_env.ASSET}/${app.pm2_env.BASE}`;
   const orders = await binanceClient.fetchOrders(symbol);
   let buyOrder;
@@ -170,7 +187,7 @@ bot.onText(/^\/order (\S+)$/, async (msg, match) => {
   const tableMsg = table(
     [
       ["Thời gian", "Lệnh", "Giá", "Khớp / SL", "USD", "Fee", "Profit", "Trạng thái"],
-      ...takeRight(rows, 10),
+      ...(opts.full ? rows : takeRight(rows, 10)),
     ],
     {
       header: {
@@ -185,8 +202,21 @@ bot.onText(/^\/order (\S+)$/, async (msg, match) => {
       ],
     }
   );
-  return bot.sendMessage(msg.chat.id, `<pre>${tableMsg}</pre>`, { parse_mode: "HTML" });
-});
+  return tableMsg;
+}
+
+async function getBalanceTableText() {
+  const apps = await getApps();
+  const assets = uniq([...apps.map((a) => a.pm2_env.ASSET), ...apps.map((a) => a.pm2_env.BASE)]);
+  const balances = await binanceClient.fetchBalance();
+  const tableMsg = table([
+    ["STT", "Asset", "Free", "Locked"],
+    ...balances.info.balances
+      .filter((b) => assets.includes(b.asset))
+      .map((a, index) => [index + 1, a.asset, a.free, a.locked]),
+  ]);
+  return tableMsg;
+}
 
 async function getApps() {
   return await new Promise((resolve, reject) => pm2.list((err, list) => resolve(list))).then(

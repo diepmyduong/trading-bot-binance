@@ -20,10 +20,12 @@
     "express": "^4.17.1",
     "lodash": "^4.17.21",
     "moment-timezone": "^0.5.33",
+    "node-html-to-image": "^3.1.0",
     "node-telegram-bot-api": "^0.53.0",
     "node-telegram-operation-manager": "^1.2.0",
     "table": "^6.7.1",
     "technicalindicators": "^3.1.0",
+    "text-to-image": "^4.0.0",
     "winston": "^3.3.3",
     "winston-transport": "^4.4.0",
     "ws": "^7.4.6"
