@@ -7,6 +7,7 @@ const { config } = require("./config");
 const { table } = require("table");
 const moment = require("moment-timezone");
 const nodeHtmlToImage = require("node-html-to-image");
+const fs = require("fs");
 
 const bot = new TelegramBot(config.telegramCommandToken, { polling: true });
 bot.on("polling_error", (msg) => console.log(msg));
