@@ -29,11 +29,11 @@ app.post("/api/order/buy", async (req, res) => {
   try {
     const { asset, base, price, balance } = req.body;
     const qty = Math.floor(balance / price);
-    // const order = await binanceClient.createLimitBuyOrder(`${asset}/${base}`, qty, price);
-    console.log("balance, price", balance, price, qty);
-    const order = await binanceClient.createMarketOrder(`${asset}/${base}`, "buy", qty, price, {
-      quoteOrderQty: balance,
-    });
+    const order = await binanceClient.createLimitBuyOrder(`${asset}/${base}`, qty, price);
+    // console.log("balance, price", balance, price, qty);
+    // const order = await binanceClient.createMarketOrder(`${asset}/${base}`, "buy", qty, price, {
+    //   quoteOrderQty: balance,
+    // });
     res.json(order);
   } catch (err) {
     console.log("buy error", err.message);

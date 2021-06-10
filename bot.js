@@ -2,7 +2,7 @@
 
 const winston = require("winston");
 const { binanceClient, fetchKline, BinanceSocket, BinanceOrderWatcher } = require("./binance");
-const { SMA, sma } = require("technicalindicators");
+const { SMA, sma, RSI } = require("technicalindicators");
 const { last, takeRight, get } = require("lodash");
 const { TelegramTransport } = require("./telegram-transport");
 const { config } = require("./config");
@@ -64,7 +64,10 @@ Capital: ${this.capital}$
 Time Frame: ${this.tfLong} : ${this.tfShort}`);
       await this.validateTicker();
       await this.validateInitState();
-      const { barsLong, barsShort } = await this.fetchInitBarData();
+      const { barsLong, barsShort } = await this.fetchInitBarData({
+        longLimit: 50,
+        shortLimit: 100,
+      });
       this.barsLong = barsLong;
       this.barsShort = barsShort;
       this.tfLongSocket = new BinanceSocket(this.symbol2, this.tfLong);
@@ -73,8 +76,16 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       this.tfShortSocket.on("data", async (bar) => {
         try {
           const isNew = this.updateBar("short", bar);
-          if (!isNew) return;
-          this.logBar(bar);
+          var rsi = barToRSI(takeRight(this.barsShort, 15));
+          console.log(`[${this.botName}] RSI: ${last(rsi)}`);
+          if (!isNew) {
+            if (last(rsi) >= 90) {
+              this.logSellOrderRSI(last(rsi));
+              await this.sell(last(this.barsShort));
+            }
+            return;
+          }
+          this.logBar(bar, last(rsi));
           const barLong = last(this.barsLong);
           const [preBar, barShort] = takeRight(this.barsShort, 2);
           const [smaLong] = sma({
@@ -90,49 +101,13 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond1 = barLong.close > smaLong;
             const cond2 = preBar.open < smaShort1 && preBar.close > smaShort1;
             if (cond1 & cond2) {
-              await this.checkBalanceValid();
-              this.logBuyOrder(barLong, smaLong, preBar, smaShort1);
-              if (this.sellOrder) {
-                await this.closeOrder(this.sellOrder);
-                this.sellOrder = null;
-              }
-              const price = barShort.close;
-              const qty = this.capital / barShort.close;
-              this.buyOrder = await binanceClient.createLimitBuyOrder(this.symbol, qty, price);
-              this.watchOrder(this.buyOrder);
-              this.logBuyOrderSended(this.buyOrder);
-              this.isHolding = true;
+              await this.buy(barLong, smaLong, preBar, smaShort1, barShort);
             }
           } else {
             // Sell
             if (preBar && preBar.close < smaShort2) {
               this.logSellOrder(preBar, smaShort2);
-              const balances = await binanceClient.fetchBalance();
-              const sellQty = balances[this.asset].free;
-              const sellPrice = barShort.close;
-              if (sellQty == 0) {
-                this.isHolding = false;
-                throw Error("Nothing to sell: Prev Buy Order Filled Qty is Zero");
-              }
-              let buyPrice = 0;
-              if (this.buyOrder) {
-                const fetchBuyOrder = await this.closeOrder(this.buyOrder);
-                buyPrice = fetchBuyOrder.average;
-                this.buyOrder = null;
-              }
-              this.sellOrder = await binanceClient.createLimitSellOrder(
-                this.symbol,
-                sellQty,
-                sellPrice * 0.9999
-              );
-              var wacher = new BinanceOrderWatcher(this.sellOrder);
-              wacher.on("data", (order) => {
-                const profit = buyPrice == 0 ? 0 : ((order.price - buyPrice) / buyPrice) * 100;
-                this.logTrading(order, profit.toFixed(4));
-                this.logBalance();
-              });
-              this.logSellOrderSended(this.sellOrder);
-              this.isHolding = false;
+              await this.sell(barShort);
             }
           }
         } catch (err) {
@@ -143,6 +118,50 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     } catch (err) {
       this.emit("error", err);
     }
+  }
+
+  async buy(barLong, smaLong, preBar, smaShort1, barShort) {
+    await this.checkBalanceValid();
+    this.logBuyOrder(barLong, smaLong, preBar, smaShort1);
+    if (this.sellOrder) {
+      await this.closeOrder(this.sellOrder);
+      this.sellOrder = null;
+    }
+    const price = barShort.close;
+    const qty = this.capital / barShort.close;
+    this.buyOrder = await binanceClient.createLimitBuyOrder(this.symbol, qty, price);
+    this.watchOrder(this.buyOrder);
+    this.logBuyOrderSended(this.buyOrder);
+    this.isHolding = true;
+  }
+
+  async sell(barShort) {
+    const balances = await binanceClient.fetchBalance();
+    const sellQty = balances[this.asset].free;
+    const sellPrice = barShort.close;
+    if (sellQty == 0) {
+      this.isHolding = false;
+      throw Error("Nothing to sell: Prev Buy Order Filled Qty is Zero");
+    }
+    let buyPrice = 0;
+    if (this.buyOrder) {
+      const fetchBuyOrder = await this.closeOrder(this.buyOrder);
+      buyPrice = fetchBuyOrder.average;
+      this.buyOrder = null;
+    }
+    this.sellOrder = await binanceClient.createLimitSellOrder(
+      this.symbol,
+      sellQty,
+      sellPrice * 0.9999
+    );
+    var wacher = new BinanceOrderWatcher(this.sellOrder);
+    wacher.on("data", (order) => {
+      const profit = buyPrice == 0 ? 0 : ((order.price - buyPrice) / buyPrice) * 100;
+      this.logTrading(order, profit.toFixed(4));
+      this.logBalance();
+    });
+    this.logSellOrderSended(this.sellOrder);
+    this.isHolding = false;
   }
 
   async checkBalanceValid() {
@@ -158,6 +177,9 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
   logSellOrder(preBar, smaShort2) {
     this.logger.info(`[${this.botName}] Ready to Sell With Info
 Pre Bar Close: ${preBar.close} < SMA Short: ${smaShort2}`);
+  }
+  logSellOrderRSI(rsi) {
+    this.logger.info(`[${this.botName}] Ready to Sell With Info: RSI: ${rsi} > 90`);
   }
 
   logBuyOrderSended(order) {
@@ -250,9 +272,11 @@ ${this.asset} Balance: Free (${assetBalance.free}) - Used: (${assetBalance.used}
     });
   }
 
-  logBar(bar) {
+  logBar(bar, rsi) {
     this.klineLogger.info(
-      `[${new Date(bar.time * 1000)}] O: ${bar.open} H: ${bar.high} L: ${bar.low} C: ${bar.close}`
+      `[${new Date(bar.time * 1000)}] O: ${bar.open} H: ${bar.high} L: ${bar.low} C: ${
+        bar.close
+      } RSI: ${rsi}`
     );
   }
 
@@ -265,7 +289,7 @@ ${this.asset} Balance: Free (${assetBalance.free}) - Used: (${assetBalance.used}
       } ID: ${order.id} Profit: ${profit}%`
     );
   }
-  async fetchInitBarData() {
+  async fetchInitBarData({ longLimit = 10, shortLimit = 10 }) {
     const parseData = (r) => ({
       time: r[0] / 1000,
       open: parseFloat(r[1]),
@@ -277,18 +301,28 @@ ${this.asset} Balance: Free (${assetBalance.free}) - Used: (${assetBalance.used}
       fetchKline({
         symbol: this.symbol2,
         interval: this.tfLong,
-        limit: 10,
+        limit: longLimit,
       }).then((res) => res.map(parseData)),
       fetchKline({
         symbol: this.symbol2,
         interval: this.tfShort,
-        limit: 10,
+        limit: shortLimit,
       }).then((res) => res.map(parseData)),
     ]).then(([barsLong, barsShort]) => ({
       barsLong,
       barsShort,
     }));
   }
+}
+
+function barToRSI(bars) {
+  let rsi = new RSI({ period: 14, values: [] });
+  let results = [];
+  bars.forEach((b) => {
+    let result = rsi.nextValue(b.close);
+    results.push(result);
+  });
+  return results;
 }
 
 module.exports = TradingBot;

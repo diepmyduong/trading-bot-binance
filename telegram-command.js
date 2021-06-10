@@ -175,6 +175,8 @@ bot.onText(/^\/stats/, async (msg, match) => {
     var capital = parseFloat(app.pm2_env.CAPITAL);
     var botName = app.pm2_env.BOT_NAME;
     var market = await getMarket(botName, asset, base);
+    market.capital = capital;
+    writeJSON(data);
   }
   const data = require("./data.json");
   for (var i = 0; i < Object.values(data.markets).length; i++) {
@@ -184,6 +186,7 @@ bot.onText(/^\/stats/, async (msg, match) => {
     sell += market.sellCost;
     profit += marketProfit;
     orderCount += market.orderCount;
+
     row.push([
       i + 1,
       market.asset,
@@ -191,7 +194,7 @@ bot.onText(/^\/stats/, async (msg, match) => {
       market.buyCost.toFixed(4),
       market.sellCost.toFixed(4),
       marketProfit.toFixed(4),
-      capital,
+      market.capital,
       ((marketProfit / capital) * 100).toFixed(4),
     ]);
   }
