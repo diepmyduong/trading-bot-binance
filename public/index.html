@@ -11,6 +11,7 @@
         <div>Symbol <input id="asset" placeholder="BNB" value="BNB"/>/<input id="base" placeholder="USDT" value="USDT" /> <button onclick="run()" id>Trade</button></div>
         <div>Time Frame Dài <input id="tf_long" placeholder="15m" value="1d" /> Số nến: <input type="number" id="tf_long_period" placeholder="100" value="100"/></div>
         <div>Time Frame Ngắn <input id="tf_short" placeholder="5m" value="1h" /> Số nến: <input type="number" id="tf_short_period" placeholder="260" value="180"/></div>
+        <div>Ngày bắt đầu <input type="date" id="startTime"/> </div>
         <h2>Đặt lệnh</h2>
         <div>Số tiền: <input type="number" id="order_balance"/> Giá: <input id="order_price" /> <button onclick="getCurrentPrice()">Giá hiện tại</button><button onclick="order('buy')">Mua</button><button onclick="order('sell')">Bán</button></div>
         <pre id="order"></pre>
@@ -67,6 +68,8 @@
                 let tf_short = document.getElementById('tf_short').value;
                 let tf_long_period = document.getElementById('tf_long_period').value;
                 let tf_short_period = document.getElementById('tf_short_period').value;
+                let startTime = document.getElementById('startTime').value;
+                console.log('startTime', startTime);
                 if (tf_long == "" || tf_short == "" || tf_long_period == "" || tf_short_period == "") {
                     alert('Chưa nhâp timeframe');
                 }
@@ -80,7 +83,8 @@
                     element: document.getElementById("chart-1h"),
                     symbol: symbol,
                     interval: tf_short,
-                    period: parseInt(tf_short_period)
+                    period: parseInt(tf_short_period),
+                    startTime: startTime
                 });
                 const setBalance = () => {
                     balanceProfit = ((balance / 1000) - 1) * 100

@@ -22,9 +22,9 @@ binanceClient.loadMarkets().then((markets) => {
   console.log("markets loaded", markets.length);
 });
 
-const fetchKline = async function ({ symbol, interval, limit }) {
+const fetchKline = async function ({ symbol, interval, limit, startTime, endTime }) {
   return axios
-    .get(binanceHost + "/v3/klines", { params: { symbol, interval, limit } })
+    .get(binanceHost + "/v3/klines", { params: { symbol, interval, limit, startTime, endTime } })
     .then((res) => res.data)
     .catch((err) => {
       console.log("fetchKline error", err.message);

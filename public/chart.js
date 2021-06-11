@@ -7,7 +7,7 @@
 const binanceConfig = {
   mainnet: "wss://stream.binance.com:9443/ws",
   testnet: "wss://testnet.binance.vision/ws",
-  debug: true,
+  debug: false,
 };
 
 class EventEmitter {
@@ -28,12 +28,13 @@ class EventEmitter {
 
 class CandleChart extends EventEmitter {
   tradingMarkers = [];
-  constructor({ element, symbol, interval, period = 1000, barPrice = false }) {
+  constructor({ element, symbol, interval, period = 1000, barPrice = false, startTime }) {
     super();
     this.element = element;
     this.symbol = symbol;
     this.interval = interval;
     this.period = period;
+    this.startTime = startTime;
     this.chart = LightweightCharts.createChart(element, {
       width: 600,
       height: 300,
@@ -66,9 +67,11 @@ class CandleChart extends EventEmitter {
     this.startWebsocket();
   }
   async fetchKline() {
-    const response = await fetch(
-      `api/kline?symbol=${this.symbol.toUpperCase()}&interval=${this.interval}&limit=${this.period}`
-    );
+    const url = `api/kline?symbol=${this.symbol.toUpperCase()}&interval=${this.interval}&limit=${
+      this.period
+    }${this.startTime ? "&startTime=" + new Date(this.startTime).getTime() : ""}`;
+    console.log("url", url);
+    const response = await fetch(url);
     const parseData = (r) => ({
       time: r[0] / 1000,
       open: parseFloat(r[1]),

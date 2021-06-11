@@ -43,7 +43,10 @@ bot.onText(/^\/status$/, (msg) => {
         app.pm2_env.status,
       ]),
     ]);
-    return bot.sendMessage(msg.chat.id, `<pre>${tableMsg}</pre>`, { parse_mode: "HTML" });
+    const image = await nodeHtmlToImage({
+      html: `<html><head><style>body { width: 800px }</style></head><body><pre>${tableMsg}</pre></body></html>`,
+    });
+    return bot.sendPhoto(msg.chat.id, image);
   });
 });
 

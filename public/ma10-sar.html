@@ -11,6 +11,7 @@
         <div>Symbol <input id="asset" placeholder="BNB" value="BNB"/>/<input id="base" placeholder="USDT" value="USDT" /> <button onclick="run()" id>Trade</button></div>
         <div>Time Frame Dài <input id="tf_long" placeholder="15m" value="1d" /> Số nến: <input type="number" id="tf_long_period" placeholder="100" value="100"/></div>
         <div>Time Frame Ngắn <input id="tf_short" placeholder="5m" value="1h" /> Số nến: <input type="number" id="tf_short_period" placeholder="260" value="180"/></div>
+        <div>Ngày bắt đầu <input type="date" id="startTime"/> </div>
         <h2>Đặt lệnh</h2>
         <div>Số tiền: <input type="number" id="order_balance"/> Giá: <input id="order_price" /> <button onclick="getCurrentPrice()">Giá hiện tại</button><button onclick="order('buy')">Mua</button><button onclick="order('sell')">Bán</button></div>
         <pre id="order"></pre>
@@ -56,6 +57,7 @@
                 let close = 0;
                 let maxWin = 0;
                 let maxLost = 0;
+                let trallingProfit = 0;
                 const logs = [];
 
                 let symbol = getSysmbol().symbol;
@@ -67,6 +69,7 @@
                 let tf_short = document.getElementById('tf_short').value;
                 let tf_long_period = document.getElementById('tf_long_period').value;
                 let tf_short_period = document.getElementById('tf_short_period').value;
+                let startTime = document.getElementById('startTime').value;
                 if (tf_long == "" || tf_short == "" || tf_long_period == "" || tf_short_period == "") {
                     alert('Chưa nhâp timeframe');
                 }
@@ -80,7 +83,8 @@
                     element: document.getElementById("chart-1h"),
                     symbol: symbol,
                     interval: tf_short,
-                    period: parseInt(tf_short_period)
+                    period: parseInt(tf_short_period),
+                    startTime: startTime
                 });
                 const setBalance = () => {
                     balanceProfit = ((balance / 1000) - 1) * 100
@@ -129,6 +133,7 @@
                         profit = (balance * (changePrice / buyPrice));
                         balance = balance + profit;
                         buyPrice = 0;
+                        trallingProfit = 0;
                         if (profit > 0) {
                             win++;
                             maxWin = Math.max(maxWin, profit);
@@ -158,32 +163,46 @@
                         const smaValue_1h = sma_1h.nextValue(bar.close);
                         const preBar = bars[i - 1];
                         const preSar = sarValue[i - 1];
-
+                       
                         if (!isHold) {
                                 // Buy
                                 const cond1 = bar.close > smaValue_1h;
                                 const cond2 = preBar && preBar.open < smaValue_1h && preBar.close > smaValue_1h;
                                 const cond3 = preBar && preBar.low > preSar;
-                                const cond4 = rsi[i - 1] >= 60;
-                                if (cond1 && cond2 && cond3 && cond4) {
+                                // const cond4 = preBar && preBar.close > preBar.open;
+                                const cond5 = preBar && preBar.close <= smaValue_1h * 1.05;
+                                if (cond1 && cond2 && cond3 && cond5) {
                                     var bar_1d = j == 0 ? chart1d.bars[0] : chart1d.bars[j];
                                     while(chart1d.bars[j + 1] && chart1d.bars[j + 1].time <= bar.time) {
                                         lastSmaValue_1d = sma_1d.nextValue(chart1d.bars[j + 1].close);
                                         bar_1d = chart1d.bars[j + 1];
                                         j++;
                                     }
-                                    const cond3 = bar_1d.close > lastSmaValue_1d;
+                                    const cond3 = true; // bar_1d.close > lastSmaValue_1d;
                                     if (cond3) {
                                         chart1h.buy(i);
                                     }
                                 }
                         } else {
-                            // Sale
-                            if (rsi[i] >= 90) {
-                                chart1h.sell(i);
-                            } else if (preBar && preBar.close < smaValue_1h) {
-                                chart1h.sell(i);  
+                            const cond1 = rsi[i] >= 90;
+                            const cond2 = preBar && preBar.close < smaValue_1h;
+                            const profit = preBar.close / buyPrice;
+                            var cond3 = false;
+                            if (trallingProfit < profit) {
+                                trallingProfit = profit;
+                            } else {
+                                if (profit < trallingProfit - 0.05) {
+                                    cond3 = true;
+                                }
+
                             }
+                            trallingProfit =  buyPrice
+                            if (cond1 || cond2 || cond3) {
+                                if (preBar.close < buyPrice * 0.95 || preBar.close > buyPrice) {
+                                    chart1h.sell(i);
+                                }
+                            }
+                            
                         }
                     
                     }
