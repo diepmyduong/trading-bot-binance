@@ -168,15 +168,14 @@ bot.onText(/^\/stats/, async (msg, match) => {
   var orderCount = 0;
   var profit = 0;
   var row = [];
+
   for (var i = 0; i < apps.length; i++) {
     var app = apps[i];
     var asset = app.pm2_env.ASSET;
     var base = app.pm2_env.BASE;
     var capital = parseFloat(app.pm2_env.CAPITAL);
     var botName = app.pm2_env.BOT_NAME;
-    var market = await getMarket(botName, asset, base);
-    market.capital = capital;
-    writeJSON(data);
+    var market = await getMarket(botName, asset, base, capital);
   }
   const data = require("./data.json");
   for (var i = 0; i < Object.values(data.markets).length; i++) {
@@ -213,7 +212,7 @@ bot.onText(/^\/stats/, async (msg, match) => {
   return bot.sendPhoto(msg.chat.id, image);
 });
 
-async function getMarket(botName, asset, base) {
+async function getMarket(botName, asset, base, capital) {
   var data = require("./data.json");
   var market = get(data.markets, botName);
   if (!market) {
@@ -227,10 +226,12 @@ async function getMarket(botName, asset, base) {
       timestamp: null,
       isHolding: false,
       holdingCost: 0,
+      capital: capital,
     };
     set(data.markets, botName, market);
-    writeJSON(data);
   }
+  set(data.markets, botName + ".capital", capital);
+  writeJSON(data);
   const orders = market.timestamp
     ? await binanceClient.fetchOrders(`${asset}/${base}`, market.timestamp + 1)
     : await binanceClient.fetchOrders(`${asset}/${base}`);
