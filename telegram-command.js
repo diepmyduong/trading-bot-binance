@@ -28,7 +28,7 @@ function hasEntity(entity, entities) {
   return entities.some((e) => e.type === entity);
 }
 
-bot.onText(/^\/status$/, (msg) => {
+bot.onText(/^\/status$/, async (msg) => {
   pm2.list((err, list) => {
     const apps = list.filter((a) => a.pm2_env.BOT_NAME);
     if (apps.length == 0) return bot.sendMessage(msg.chat.id, `Chưa có bot nào được tạo.`);
