@@ -1,4 +1,4 @@
-const TradingBot = require("./bot");
+const TradingBot = require("./bot2");
 
 (async function run() {
   const config = {
