@@ -77,7 +77,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
         try {
           const isNew = this.updateBar("short", bar);
           var rsi = barToRSI(takeRight(this.barsShort, 15));
-          console.log(`[${this.botName}] RSI: ${last(rsi)}`);
+          // console.log(`[${this.botName}] RSI: ${last(rsi)}`);
           if (!isNew) {
             if (last(rsi) >= 90) {
               this.logSellOrderRSI(last(rsi));
