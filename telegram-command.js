@@ -9,6 +9,8 @@ const moment = require("moment-timezone");
 const nodeHtmlToImage = require("node-html-to-image");
 const fs = require("fs");
 
+moment.tz.setDefault("Asia/Ho_Chi_Minh");
+
 const bot = new TelegramBot(config.telegramCommandToken, { polling: true });
 bot.on("polling_error", (msg) => console.log(msg));
 
@@ -216,7 +218,6 @@ bot.onText(/^\/stats$/, async (msg, match) => {
 });
 
 bot.onText(/^\/stats from (\S+)$/, async (msg, match) => {
-  console.log("stats from");
   const time = moment(match[1], "YYYY:MM:DD:HH:mm").toDate().getTime();
   var data = require("./data.json");
   for (var botName of Object.keys(data.markets)) {
@@ -238,7 +239,32 @@ bot.onText(/^\/stats from (\S+)$/, async (msg, match) => {
       "YYYY:MM:DD:HH:mm"
     ).toLocaleString()}`
   );
-  console.log("end");
+});
+
+bot.onText(/^\/stats (\S+) from (\S+)$/, async (msg, match) => {
+  const botName = match[1];
+  const time = moment(match[2], "YYYY:MM:DD:HH:mm").toDate().getTime();
+  var data = require("./data.json");
+  var market = data.markets[botName];
+  if (market) {
+    return bot.sendMessage(msg.chat.id, "Không tìm thấy dữ liệu hoặc sai tên bot");
+  }
+  market.buyCost = 0;
+  market.sellCost = 0;
+  market.orderCount = 0;
+  market.holdingCost = 0;
+  market.isHolding = false;
+  market.timestamp = time;
+  set(data.markets, botName, market);
+  writeJSON(data);
+
+  bot.sendMessage(
+    msg.chat.id,
+    `Đã cập nhật thống kê bắt đầu từ thời gian ${moment(
+      match[1],
+      "YYYY:MM:DD:HH:mm"
+    ).toLocaleString()}`
+  );
 });
 
 async function getMarket(botName, asset, base, capital) {
