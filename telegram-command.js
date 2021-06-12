@@ -64,6 +64,9 @@ bot.onText(/^\/delete (\S+)$/, (msg, match) => {
   const name = match[1];
   pm2.delete(name, (err) => {
     if (err) return bot.sendMessage(msg.chat.id, err.message);
+    const data = require("./data.json");
+    delete data.markets[name];
+    writeJSON(data);
     bot.sendMessage(msg.chat.id, `Đã xoá bot ${name}`);
   });
 });
