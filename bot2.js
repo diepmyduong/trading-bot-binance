@@ -117,7 +117,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             // Sell
             if (cond1 || cond2) {
               if (
-                buyPrice == 0 ||
+                this.buyPrice == 0 ||
                 preBar.close < this.buyPrice * 0.95 ||
                 preBar.close > this.buyPrice
               ) {
@@ -267,7 +267,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
         this.buyPrice = order.price;
         this.watchOrder(order);
       } else {
-        let buyPrice = this.buyOrder.price;
+        // let buyPrice = this.buyOrder.price;
         this.sellOrder = order;
         var wacher = new BinanceOrderWatcher(this.sellOrder);
         wacher.on("data", (order) => {
