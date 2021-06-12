@@ -273,7 +273,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
     } else {
       const balances = await this.logBalance();
       const assetBalance = balances[this.asset];
-      if ((assetBalance.free >= 0, 0001)) {
+      if (assetBalance.free >= 0.0001) {
         this.isHolding = true;
       }
     }
