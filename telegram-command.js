@@ -246,7 +246,7 @@ bot.onText(/^\/stats (\S+) from (\S+)$/, async (msg, match) => {
   const time = moment(match[2], "YYYY:MM:DD:HH:mm").toDate().getTime();
   var data = require("./data.json");
   var market = data.markets[botName];
-  if (market) {
+  if (!market) {
     return bot.sendMessage(msg.chat.id, "Không tìm thấy dữ liệu hoặc sai tên bot");
   }
   market.buyCost = 0;
