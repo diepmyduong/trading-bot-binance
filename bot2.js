@@ -162,11 +162,11 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       buyPrice = fetchBuyOrder.average;
       this.buyOrder = null;
     }
-    this.sellOrder = await binanceClient.createLimitSellOrder(
-      this.symbol,
-      sellQty,
-      sellPrice * 0.9999
-    );
+    this.sellOrder = await binanceClient
+      .createMarketOrder(this.symbol, "sell", sellQty * 0.99999, sellPrice)
+      .catch((err) => {
+        return binanceClient.createLimitSellOrder(this.symbol, sellQty, sellPrice * 0.9999);
+      });
     var wacher = new BinanceOrderWatcher(this.sellOrder);
     wacher.on("data", (order) => {
       const profit = buyPrice == 0 ? 0 : ((order.price - buyPrice) / buyPrice) * 100;
