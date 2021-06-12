@@ -224,6 +224,8 @@ bot.onText(/^\/stats from (\S+)$/, async (msg, match) => {
     market.buyCost = 0;
     market.sellCost = 0;
     market.orderCount = 0;
+    market.holdingCost = 0;
+    market.isHolding = false;
     market.timestamp = time;
     set(data.markets, botName, market);
   }
