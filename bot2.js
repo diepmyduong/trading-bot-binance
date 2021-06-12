@@ -172,9 +172,9 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       const profit = buyPrice == 0 ? 0 : ((order.price - buyPrice) / buyPrice) * 100;
       this.logTrading(order, profit.toFixed(4));
       this.logBalance();
+      this.isHolding = false;
     });
     this.logSellOrderSended(this.sellOrder);
-    this.isHolding = false;
   }
 
   async checkBalanceValid() {
@@ -243,13 +243,19 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
     const openingOrders = await binanceClient.fetchOpenOrders(this.symbol);
     if (openingOrders.length > 0) {
       const order = openingOrders[0];
+      this.isHolding = true;
       if (order.side == "buy") {
-        this.isHolding = true;
         this.buyOrder = order;
         this.watchOrder(order);
       } else {
         this.sellOrder = order;
-        this.watchOrder(order);
+        var wacher = new BinanceOrderWatcher(this.sellOrder);
+        wacher.on("data", (order) => {
+          // const profit = buyPrice == 0 ? 0 : ((order.price - buyPrice) / buyPrice) * 100;
+          this.logTrading(order, 0);
+          this.logBalance();
+          this.isHolding = false;
+        });
       }
     } else {
       const balances = await this.logBalance();
