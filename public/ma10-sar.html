@@ -178,7 +178,7 @@
                                         bar_1d = chart1d.bars[j + 1];
                                         j++;
                                     }
-                                    const cond3 = true; // bar_1d.close > lastSmaValue_1d;
+                                    const cond3 = bar_1d.close > lastSmaValue_1d;
                                     if (cond3) {
                                         chart1h.buy(i);
                                     }

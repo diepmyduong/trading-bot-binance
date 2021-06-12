@@ -144,7 +144,7 @@ bot.onText(/^\/balance2$/, async (msg, match) => {
   return bot.sendPhoto(msg.chat.id, image);
 });
 
-bot.onText(/^\/order (\S+)/, async (msg, match) => {
+bot.onText(/^\/order (\S+)$/, async (msg, match) => {
   const name = match[1];
   const apps = await getApps();
   const app = apps.find((a) => a.pm2_env.BOT_NAME == name);
@@ -152,7 +152,7 @@ bot.onText(/^\/order (\S+)/, async (msg, match) => {
   const tableMsg = await getOrderTableText(app);
   return bot.sendMessage(msg.chat.id, `<pre>${tableMsg}</pre>`, { parse_mode: "HTML" });
 });
-bot.onText(/^\/order2 (\S+)/, async (msg, match) => {
+bot.onText(/^\/order2 (\S+)$/, async (msg, match) => {
   const name = match[1];
   const apps = await getApps();
   const app = apps.find((a) => a.pm2_env.BOT_NAME == name);
@@ -164,7 +164,7 @@ bot.onText(/^\/order2 (\S+)/, async (msg, match) => {
   return bot.sendPhoto(msg.chat.id, image);
 });
 
-bot.onText(/^\/stats/, async (msg, match) => {
+bot.onText(/^\/stats$/, async (msg, match) => {
   const apps = await getApps();
   var buy = 0;
   var sell = 0;
@@ -213,6 +213,30 @@ bot.onText(/^\/stats/, async (msg, match) => {
     html: `<html><head><style>body { width: 1000px }</style></head><body><pre>${tableMsg}</pre></body></html>`,
   });
   return bot.sendPhoto(msg.chat.id, image);
+});
+
+bot.onText(/^\/stats from (\S+)$/, async (msg, match) => {
+  console.log("stats from");
+  const time = moment(match[1], "YYYY:MM:DD:HH:mm").toDate().getTime();
+  var data = require("./data.json");
+  for (var botName of Object.keys(data.markets)) {
+    var market = data.markets[botName];
+    market.buyCost = 0;
+    market.sellCost = 0;
+    market.orderCount = 0;
+    market.timestamp = time;
+    set(data.markets, botName, market);
+  }
+  writeJSON(data);
+
+  bot.sendMessage(
+    msg.chat.id,
+    `Đã cập nhật thống kê bắt đầu từ thời gian ${moment(
+      match[1],
+      "YYYY:MM:DD:HH:mm"
+    ).toLocaleString()}`
+  );
+  console.log("end");
 });
 
 async function getMarket(botName, asset, base, capital) {
