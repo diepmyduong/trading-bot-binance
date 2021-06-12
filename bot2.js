@@ -152,7 +152,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     const balances = await binanceClient.fetchBalance();
     const sellQty = balances[this.asset].total;
     const sellPrice = barShort.close;
-    if (sellQty == 0) {
+    if (sellQty < 0.0001) {
       this.isHolding = false;
       throw Error("Nothing to sell: Prev Buy Order Filled Qty is Zero");
     }
@@ -273,7 +273,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
     } else {
       const balances = await this.logBalance();
       const assetBalance = balances[this.asset];
-      if (assetBalance.free > 0) {
+      if ((assetBalance.free >= 0, 0001)) {
         this.isHolding = true;
       }
     }
