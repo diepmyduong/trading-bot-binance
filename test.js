@@ -9,46 +9,50 @@ const nodeHtmlToImage = require("node-html-to-image");
 const fs = require("fs");
 
 (async () => {
-  var asset = "TFUEL";
-  var base = "USDT";
-  var botName = "TFUELUSDT";
-  var data = require("./data.json");
-  var market = get(data.markets, botName);
-  if (!market) {
-    market = {
-      asset: asset,
-      base: base,
-      buyCost: 0,
-      sellCost: 0,
-      orderCount: 0,
-      fromOrderId: null,
-      timestamp: null,
-    };
-    set(data.markets, botName, market);
-    writeJSON(data);
-  }
-  console.log("timestamp", market.timestamp);
-  const orders = market.timestamp
-    ? await binanceClient.fetchOrders(`${asset}/${base}`, market.timestamp + 1)
-    : await binanceClient.fetchOrders(`${asset}/${base}`);
-  console.log("orders", orders.length);
-  for (const o of orders) {
-    market.orderCount++;
-    market.fromOrderId = o.id;
-    market.timestamp = o.timestamp;
-    if (o.side == "buy") {
-      market.buyCost += o.cost + get(o, "fee.cost", 0);
-    } else {
-      market.sellCost += o.cost + get(o, "fee.cost", 0);
-    }
-  }
-  writeJSON(data);
+  binanceClient.fetchBalance().then((b) => console.log(JSON.stringify(b["MITH"], null, 2)));
 })();
 
-function writeJSON(data, cb) {
-  const writeStream = fs.createWriteStream("data.json");
-  writeStream.write(Buffer.from(JSON.stringify(data, null, 2)), cb);
-}
+// (async () => {
+//   var asset = "TFUEL";
+//   var base = "USDT";
+//   var botName = "TFUELUSDT";
+//   var data = require("./data.json");
+//   var market = get(data.markets, botName);
+//   if (!market) {
+//     market = {
+//       asset: asset,
+//       base: base,
+//       buyCost: 0,
+//       sellCost: 0,
+//       orderCount: 0,
+//       fromOrderId: null,
+//       timestamp: null,
+//     };
+//     set(data.markets, botName, market);
+//     writeJSON(data);
+//   }
+//   console.log("timestamp", market.timestamp);
+//   const orders = market.timestamp
+//     ? await binanceClient.fetchOrders(`${asset}/${base}`, market.timestamp + 1)
+//     : await binanceClient.fetchOrders(`${asset}/${base}`);
+//   console.log("orders", orders.length);
+//   for (const o of orders) {
+//     market.orderCount++;
+//     market.fromOrderId = o.id;
+//     market.timestamp = o.timestamp;
+//     if (o.side == "buy") {
+//       market.buyCost += o.cost + get(o, "fee.cost", 0);
+//     } else {
+//       market.sellCost += o.cost + get(o, "fee.cost", 0);
+//     }
+//   }
+//   writeJSON(data);
+// })();
+
+// function writeJSON(data, cb) {
+//   const writeStream = fs.createWriteStream("data.json");
+//   writeStream.write(Buffer.from(JSON.stringify(data, null, 2)), cb);
+// }
 
 // var a = times(35, random);
 // console.log(

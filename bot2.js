@@ -150,7 +150,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
 
   async sell(barShort) {
     const balances = await binanceClient.fetchBalance();
-    const sellQty = balances[this.asset].free;
+    const sellQty = balances[this.asset].total;
     const sellPrice = barShort.close;
     if (sellQty == 0) {
       this.isHolding = false;
@@ -161,6 +161,10 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       const fetchBuyOrder = await this.closeOrder(this.buyOrder);
       buyPrice = fetchBuyOrder.average;
       this.buyOrder = null;
+    }
+    if (this.sellOrder) {
+      await this.closeOrder(this.sellOrder);
+      this.sellOrder = null;
     }
     this.sellOrder = await binanceClient
       .createMarketOrder(this.symbol, "sell", sellQty * 0.99999, sellPrice)
@@ -240,6 +244,14 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
   }
 
   async validateInitState() {
+    const orders = await binanceClient.fetchOrders(this.symbol);
+    for (var j = orders.length - 1; j >= 0; j--) {
+      const o = orders[j];
+      if (o.side == "buy" && o.status == "closed") {
+        this.buyOrder = o;
+        break;
+      }
+    }
     const openingOrders = await binanceClient.fetchOpenOrders(this.symbol);
     if (openingOrders.length > 0) {
       const order = openingOrders[0];
@@ -248,11 +260,12 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
         this.buyOrder = order;
         this.watchOrder(order);
       } else {
+        let buyPrice = this.buyOrder.average;
         this.sellOrder = order;
         var wacher = new BinanceOrderWatcher(this.sellOrder);
         wacher.on("data", (order) => {
-          // const profit = buyPrice == 0 ? 0 : ((order.price - buyPrice) / buyPrice) * 100;
-          this.logTrading(order, 0);
+          const profit = buyPrice == 0 ? 0 : ((order.price - buyPrice) / buyPrice) * 100;
+          this.logTrading(order, profit);
           this.logBalance();
           this.isHolding = false;
         });
