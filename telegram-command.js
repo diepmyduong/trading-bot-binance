@@ -79,12 +79,18 @@ bot.onText(/^\/restart (\S+)$/, (msg, match) => {
 });
 bot.onText(/^\/restart all$/, async (msg, match) => {
   const apps = await getApps();
-  apps.forEach((app) => {
-    pm2.restart(app.name, (err) => {
-      if (err) return bot.sendMessage(msg.chat.id, err.message);
-    });
-  });
-  bot.sendMessage(msg.chat.id, `Đã restart tất cả`);
+  const restartApp = (index) => {
+    const app = apps[index];
+    if (app) {
+      bot.sendMessage(msg.chat.id, `restart bot ${app.name}`);
+      pm2.restart(app.name, (err) => {
+        if (err) return bot.sendMessage(msg.chat.id, err.message);
+        setTimeout(() => restartApp(index + 1), 5000);
+      });
+    } else {
+      bot.sendMessage(msg.chat.id, `Đã restart tất cả`);
+    }
+  };
 });
 bot.onText(/^\/add$/, async (msg, match) => {
   const apps = await getApps();
