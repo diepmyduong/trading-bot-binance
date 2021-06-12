@@ -124,13 +124,13 @@ class CandleChart extends EventEmitter {
   get currentBarIndex() {
     return this.bars.length - 1;
   }
-  sell(index) {
+  sell(index, reason) {
     this.tradingMarkers.push({
       time: this.bars[index].time,
       position: "aboveBar",
       color: "#e91e63",
       shape: "arrowDown",
-      text: "Sell @ " + this.bars[index].open.toFixed(4),
+      text: reason || "Sell @ " + this.bars[index].open.toFixed(4),
     });
     this.indicators[0].series.setMarkers(this.tradingMarkers);
     this.emit("trade", {

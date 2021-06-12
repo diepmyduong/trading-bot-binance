@@ -9,8 +9,8 @@
         <div id="open_orders"></div>
         <h2>Cấu hình</h2>
         <div>Symbol <input id="asset" placeholder="BNB" value="BNB"/>/<input id="base" placeholder="USDT" value="USDT" /> <button onclick="run()" id>Trade</button></div>
-        <div>Time Frame Dài <input id="tf_long" placeholder="15m" value="1d" /> Số nến: <input type="number" id="tf_long_period" placeholder="100" value="100"/></div>
-        <div>Time Frame Ngắn <input id="tf_short" placeholder="5m" value="1h" /> Số nến: <input type="number" id="tf_short_period" placeholder="260" value="180"/></div>
+        <div>Time Frame Dài <input id="tf_long" placeholder="15m" value="1h" /> Số nến: <input type="number" id="tf_long_period" placeholder="100" value="1000"/></div>
+        <div>Time Frame Ngắn <input id="tf_short" placeholder="5m" value="15m" /> Số nến: <input type="number" id="tf_short_period" placeholder="260" value="1000"/></div>
         <div>Ngày bắt đầu <input type="date" id="startTime"/> </div>
         <h2>Đặt lệnh</h2>
         <div>Số tiền: <input type="number" id="order_balance"/> Giá: <input id="order_price" /> <button onclick="getCurrentPrice()">Giá hiện tại</button><button onclick="order('buy')">Mua</button><button onclick="order('sell')">Bán</button></div>
@@ -186,20 +186,26 @@
                         } else {
                             const cond1 = rsi[i] >= 90;
                             const cond2 = preBar && preBar.close < smaValue_1h;
-                            const profit = preBar.close / buyPrice;
+                            const profit = preBar.high / buyPrice - 1;
                             var cond3 = false;
-                            if (trallingProfit < profit) {
-                                trallingProfit = profit;
-                            } else {
-                                if (profit < trallingProfit - 0.05) {
-                                    cond3 = true;
-                                }
+                            const cond4 = profit >= 0.2;
+                            if (cond4) console.log('profit', profit, bar.high, buyPrice);
+                            // if (trallingProfit < profit) {
+                            //     trallingProfit = profit;
+                            // } else {
+                            //     if (profit < trallingProfit - 0.05) {
+                            //         cond3 = true;
+                            //     }
 
-                            }
-                            trallingProfit =  buyPrice
-                            if (cond1 || cond2 || cond3) {
+                            // }
+                            // trallingProfit =  buyPrice
+                            if (cond1 || cond2 || cond3 || cond4) {
                                 if (preBar.close < buyPrice * 0.95 || preBar.close > buyPrice) {
-                                    chart1h.sell(i);
+                                    let reason = cond1 ? `RSI ${rsi[i]}` : "";
+                                    reason = cond2 ? `Cross MA10` : reason;
+                                    reason = cond3 ? `Trailling ${profit.toFixed(3)}`: reason;
+                                    reason =  cond4 ? `Take Profit: ${profit.toFixed(3)}` : reason;
+                                    chart1h.sell(i,reason);
                                 }
                             }
                             

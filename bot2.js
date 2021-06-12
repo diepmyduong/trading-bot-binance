@@ -12,6 +12,7 @@ class TradingBot extends EventEmitter {
   isHolding = false;
   buyOrder = null;
   sellOrder = null;
+  buyPrice = 0;
   constructor({ botName, asset, base, capital, tfLong, tfShort }) {
     super();
     this.botName = botName;
@@ -79,7 +80,10 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
           var rsi = barToRSI(takeRight(this.barsShort, 15));
           // console.log(`[${this.botName}] RSI: ${last(rsi)}`);
           if (!isNew) {
-            if (last(rsi) >= 90 && this.isHolding) {
+            const cond1 = last(rsi) >= 90;
+            const cond2 =
+              this.buyPrice > 0 && bar.close < bar.high && bar.close / this.buyPrice - 1 >= 0.25;
+            if (this.isHolding && (cond1 || cond2)) {
               this.logSellOrderRSI(last(rsi));
               await this.sell(last(this.barsShort));
             }
@@ -112,12 +116,11 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond2 = preBar && preBar.close < smaShort2;
             // Sell
             if (cond1 || cond2) {
-              let buyPrice = 0;
-              if (this.buyOrder) {
-                const fetchBuyOrder = await this.closeOrder(this.buyOrder);
-                buyPrice = fetchBuyOrder.average;
-              }
-              if (buyPrice == 0 || preBar.close < buyPrice * 0.95 || preBar.close > buyPrice) {
+              if (
+                buyPrice == 0 ||
+                preBar.close < this.buyPrice * 0.95 ||
+                preBar.close > this.buyPrice
+              ) {
                 this.logSellOrder(preBar, smaShort2);
                 await this.sell(barShort);
               }
@@ -143,6 +146,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     const price = barShort.close;
     const qty = this.capital / barShort.close;
     this.buyOrder = await binanceClient.createLimitBuyOrder(this.symbol, qty, price);
+    this.buyPrice = this.buyOrder.price;
     this.watchOrder(this.buyOrder);
     this.logBuyOrderSended(this.buyOrder);
     this.isHolding = true;
@@ -156,11 +160,10 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       this.isHolding = false;
       throw Error("Nothing to sell: Prev Buy Order Filled Qty is Zero");
     }
-    let buyPrice = 0;
+    // let buyPrice = 0;
     if (this.buyOrder) {
       const fetchBuyOrder = await this.closeOrder(this.buyOrder);
-      buyPrice = fetchBuyOrder.average;
-      this.buyOrder = null;
+      // buyPrice = fetchBuyOrder.average;
     }
     if (this.sellOrder) {
       await this.closeOrder(this.sellOrder);
@@ -173,9 +176,11 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       });
     var wacher = new BinanceOrderWatcher(this.sellOrder);
     wacher.on("data", (order) => {
-      const profit = buyPrice == 0 ? 0 : ((order.price - buyPrice) / buyPrice) * 100;
+      const profit = this.buyPrice == 0 ? 0 : (order.price / this.buyPrice - 1) * 100;
       this.logTrading(order, profit.toFixed(4));
       this.logBalance();
+      this.buyOrder = null;
+      this.buyPrice = 0;
       this.isHolding = false;
     });
     this.logSellOrderSended(this.sellOrder);
@@ -249,6 +254,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
       const o = orders[j];
       if (o.side == "buy" && o.status == "closed") {
         this.buyOrder = o;
+        this.buyPrice = o.price;
         break;
       }
     }
@@ -258,13 +264,14 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
       this.isHolding = true;
       if (order.side == "buy") {
         this.buyOrder = order;
+        this.buyPrice = order.price;
         this.watchOrder(order);
       } else {
-        let buyPrice = this.buyOrder.average;
+        let buyPrice = this.buyOrder.price;
         this.sellOrder = order;
         var wacher = new BinanceOrderWatcher(this.sellOrder);
         wacher.on("data", (order) => {
-          const profit = buyPrice == 0 ? 0 : ((order.price - buyPrice) / buyPrice) * 100;
+          const profit = this.buyPrice == 0 ? 0 : (order.price / this.buyPrice - 1) * 100;
           this.logTrading(order, profit);
           this.logBalance();
           this.isHolding = false;
