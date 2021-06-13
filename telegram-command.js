@@ -77,7 +77,7 @@ bot.onText(/^\/restart (\S+)$/, (msg, match) => {
     bot.sendMessage(msg.chat.id, `Đã restart bot ${name}`);
   });
 });
-bot.onText(/^\/restart all$/, async (msg, match) => {
+bot.onText(/^\/restartall$/, async (msg, match) => {
   const apps = await getApps();
   const restartApp = (index) => {
     const app = apps[index];
