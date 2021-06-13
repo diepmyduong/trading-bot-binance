@@ -195,6 +195,9 @@ bot.onText(/^\/stats$/, async (msg, match) => {
     var market = await getMarket(botName, asset, base, capital);
   }
   const data = require("./data.json");
+  const stickers = await binanceClient.fetchTickers(
+    Object.values(data.markets).map((m) => `${m.asset}/${m.base}`)
+  );
   for (var i = 0; i < Object.values(data.markets).length; i++) {
     var market = Object.values(data.markets)[i];
     var marketProfit = market.sellCost - market.buyCost + market.holdingCost;
@@ -212,10 +215,26 @@ bot.onText(/^\/stats$/, async (msg, match) => {
       marketProfit.toFixed(4),
       market.capital,
       ((marketProfit / capital) * 100).toFixed(4),
+      market.buyPrice.toFixed(4),
+      ((stickers[`${market.asset}/${market.base}`].last / market.buyPrice - 1) * 100).toFixed(4),
     ]);
   }
   const tableMsg = table(
-    [["STT", "BOT", "Order", "Buy($)", "Sell($)", "Profit($)", "Vốn($)", "Profit(%)"], ...row],
+    [
+      [
+        "STT",
+        "BOT",
+        "Order",
+        "Buy($)",
+        "Sell($)",
+        "Profit($)",
+        "Vốn($)",
+        "Profit(%)",
+        "Holding Price($)",
+        "Holding Profit(%)",
+      ],
+      ...row,
+    ],
     {
       header: {
         alignment: "center",
@@ -320,9 +339,11 @@ async function getMarket(botName, asset, base, capital) {
     if (lastOrder.side == "buy") {
       market.isHolding = true;
       market.holdingCost = lastOrder.cost;
+      market.buyPrice = lastOrder.price;
     } else {
       market.isHolding = false;
       market.holdingCost = 0;
+      market.buyPrice = 0;
     }
   }
 

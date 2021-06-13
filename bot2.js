@@ -185,7 +185,8 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       });
     var wacher = new BinanceOrderWatcher(this.sellOrder);
     wacher.on("data", (order) => {
-      const profit = this.buyPrice == 0 ? 0 : (order.price / this.buyPrice - 1) * 100;
+      const orderPrice = order.type == "market" ? order.average : order.price;
+      const profit = this.buyPrice == 0 ? 0 : (orderPrice / this.buyPrice - 1) * 100;
       console.log("CALCULATE PROFIT AFTER SELL");
       console.log("Buy Price", this.buyPrice, this.buyOrder);
       console.log("Sell Price", order.price);
@@ -292,7 +293,8 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
         );
         var wacher = new BinanceOrderWatcher(this.sellOrder);
         wacher.on("data", (order) => {
-          const profit = this.buyPrice == 0 ? 0 : (order.price / this.buyPrice - 1) * 100;
+          const orderPrice = order.type == "market" ? order.average : order.price;
+          const profit = this.buyPrice == 0 ? 0 : (orderPrice / this.buyPrice - 1) * 100;
           console.log(
             `INIT CALCULATE PROFIT: Buy Price: ${this.buyPrice}, Sell Price: ${order.price}, Profit: ${profit}`
           );

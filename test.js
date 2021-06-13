@@ -9,7 +9,7 @@ const nodeHtmlToImage = require("node-html-to-image");
 const fs = require("fs");
 
 (async () => {
-  await binanceClient.fetchOrder("146742142", "DATA/USDT").then((res) => {
+  await binanceClient.fetchTickers(["SNX/USDT"]).then((res) => {
     console.log(JSON.stringify(res, null, 2));
   });
 })();
