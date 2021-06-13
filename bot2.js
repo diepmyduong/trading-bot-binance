@@ -177,7 +177,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       console.log("EMPTY SELL ORDER");
     }
     const ticker = await binanceClient.fetchTicker(this.symbol);
-    this.sellOrder = binanceClient.createLimitSellOrder(this.symbol, sellQty, ticker.bid);
+    this.sellOrder = await binanceClient.createLimitSellOrder(this.symbol, sellQty, ticker.bid);
     // this.sellOrder = await binanceClient
     //   .createMarketOrder(this.symbol, "sell", sellQty * 0.99999, sellPrice)
     //   .catch((err) => {
