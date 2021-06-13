@@ -9,9 +9,9 @@ const nodeHtmlToImage = require("node-html-to-image");
 const fs = require("fs");
 
 (async () => {
-  await binanceClient.loadMarkets();
-  const market = binanceClient.market("BNB/USDT");
-  console.log(JSON.stringify(market, null, 2));
+  await binanceClient.fetchOrder("146742142", "DATA/USDT").then((res) => {
+    console.log(JSON.stringify(res, null, 2));
+  });
 })();
 
 // (async () => {

@@ -173,6 +173,11 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     this.sellOrder = await binanceClient
       .createMarketOrder(this.symbol, "sell", sellQty * 0.99999, sellPrice)
       .catch((err) => {
+        console.error(
+          `SELL MARKET ERROR : ${err.message}. SellQty: ${
+            sellQty * 0.99999
+          }, SellPrice: ${sellPrice}`
+        );
         return binanceClient.createLimitSellOrder(this.symbol, sellQty, sellPrice * 0.9999);
       });
     var wacher = new BinanceOrderWatcher(this.sellOrder);
