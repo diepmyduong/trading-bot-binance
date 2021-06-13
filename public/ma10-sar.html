@@ -145,7 +145,7 @@
                     logs.push({ type, barIndex, price, profit, profitPer, bar });
                     
                     setBalance();
-                    document.getElementById('logs').innerText = logs.map(l => `[${new Date(l.bar.time * 1000).toDateString()}] ${l.type} - Price: ${l.price} - Profit: ${l.profit.toFixed(4)}$ - ${l.profitPer.toFixed(4)}}`).join('\n');
+                    document.getElementById('logs').innerText = logs.map(l => `[${new Date(l.bar.time * 1000).toLocaleString()}] ${l.type} - Price: ${l.price} - Profit: ${l.profit.toFixed(4)}$ - ${l.profitPer.toFixed(4)}}`).join('\n');
                 }) 
                 chart1h.on('setData', async (bars) => {
                     // return;

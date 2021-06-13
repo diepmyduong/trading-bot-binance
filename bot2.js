@@ -166,9 +166,12 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       const fetchBuyOrder = await this.closeOrder(this.buyOrder);
       // buyPrice = fetchBuyOrder.average;
     }
+    console.log("CHECK SELL ORDER BEFOR SELL", this.sellOrder);
     if (this.sellOrder) {
+      console.log("CLOSE SELL ORDER");
       await this.closeOrder(this.sellOrder);
       this.sellOrder = null;
+      console.log("EMPTY SELL ORDER");
     }
     this.sellOrder = await binanceClient
       .createMarketOrder(this.symbol, "sell", sellQty * 0.99999, sellPrice)
@@ -233,7 +236,9 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
   async closeOrder(order) {
     const fetchedOrder = await binanceClient.fetchOrder(order.id, this.symbol);
     if (fetchedOrder.status == "open") {
-      await binanceClient.cancelOrder(fetchedOrder.id).catch((err) => {});
+      await binanceClient.cancelOrder(fetchedOrder.id).catch((err) => {
+        console.error(`Cancel ORDER ERROR: ${err.message}`);
+      });
     }
     return fetchedOrder;
   }
