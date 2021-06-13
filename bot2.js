@@ -156,7 +156,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     const balances = await binanceClient.fetchBalance();
     const sellQty = balances[this.asset].total;
     const sellPrice = barShort.close;
-    const market = await binanceClient.getMarket(this.symbol);
+    const market = await binanceClient.market(this.symbol);
     if (sellQty * 0.9999 < market.limits.amount.min) {
       this.isHolding = false;
       throw Error("Nothing to sell: Prev Buy Order Filled Qty is Zero");
