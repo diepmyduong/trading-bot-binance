@@ -78,7 +78,9 @@ bot.onText(/^\/restart (\S+)$/, (msg, match) => {
   });
 });
 bot.onText(/^\/restartall$/, async (msg, match) => {
+  console.log("START TO RESTART ALL APP");
   const apps = await getApps();
+  console.log("APP COUNT", apps.length);
   const restartApp = (index) => {
     const app = apps[index];
     if (app) {
@@ -91,6 +93,7 @@ bot.onText(/^\/restartall$/, async (msg, match) => {
       bot.sendMessage(msg.chat.id, `Đã restart tất cả`);
     }
   };
+  restartApp(0);
 });
 bot.onText(/^\/add$/, async (msg, match) => {
   const apps = await getApps();
