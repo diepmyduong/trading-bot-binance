@@ -176,7 +176,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     this.sellOrder = await binanceClient
       .createMarketOrder(this.symbol, "sell", sellQty * 0.99999, sellPrice)
       .catch((err) => {
-        console.error(
+        console.log(
           `SELL MARKET ERROR : ${err.message}. SellQty: ${
             sellQty * 0.99999
           }, SellPrice: ${sellPrice}`
@@ -237,7 +237,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
     const fetchedOrder = await binanceClient.fetchOrder(order.id, this.symbol);
     if (fetchedOrder.status == "open") {
       await binanceClient.cancelOrder(fetchedOrder.id).catch((err) => {
-        console.error(`Cancel ORDER ERROR: ${err.message}`);
+        console.log(`Cancel ORDER ERROR: ${err.message}`);
       });
     }
     return fetchedOrder;
