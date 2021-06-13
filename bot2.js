@@ -157,10 +157,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     const sellQty = balances[this.asset].total;
     const sellPrice = barShort.close;
     const market = await binanceClient.market(this.symbol);
-    if (
-      sellQty * 0.9999 <
-      parseFloat(market.info.filters.find((f) => f.filterType == "MIN_NOTIONAL").minNotional)
-    ) {
+    if (sellQty < market.limits.amount.min) {
       this.isHolding = false;
       throw Error("Nothing to sell: Prev Buy Order Filled Qty is Zero");
     }
@@ -177,7 +174,14 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       console.log("EMPTY SELL ORDER");
     }
     const ticker = await binanceClient.fetchTicker(this.symbol);
-    this.sellOrder = await binanceClient.createLimitSellOrder(this.symbol, sellQty, ticker.bid);
+    this.sellOrder = await binanceClient
+      .createLimitSellOrder(this.symbol, sellQty, ticker.bid)
+      .catch((err) => {
+        if (err.message.includes("MIN_NOTIONAL")) {
+          this.isHolding = false;
+        }
+        throw err;
+      });
     // this.sellOrder = await binanceClient
     //   .createMarketOrder(this.symbol, "sell", sellQty * 0.99999, sellPrice)
     //   .catch((err) => {
@@ -312,10 +316,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
       const balances = await this.logBalance();
       const assetBalance = balances[this.asset];
       const market = binanceClient.market(this.symbol);
-      if (
-        assetBalance.free * 0.99999 >=
-        parseFloat(market.info.filters.find((f) => f.filterType == "MIN_NOTIONAL").minNotional)
-      ) {
+      if (assetBalance.free >= market.limits.amount.min) {
         console.log("INIT STATE SELLING", assetBalance);
         this.isHolding = true;
       }

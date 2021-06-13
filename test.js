@@ -13,7 +13,7 @@ const fs = require("fs");
   //   console.log(JSON.stringify(res, null, 2));
   // });
   await binanceClient.loadMarkets();
-  const market = binanceClient.market("HARD/USDT");
+  const market = binanceClient.market("GTC/USDT");
   console.log(JSON.stringify(market, null, 2));
 })();
 
