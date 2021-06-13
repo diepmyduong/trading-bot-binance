@@ -190,20 +190,18 @@
                             var cond3 = false;
                             const cond4 = profit >= 0.2;
                             if (cond4) console.log('profit', profit, bar.high, buyPrice);
-                            // if (trallingProfit < profit) {
-                            //     trallingProfit = profit;
-                            // } else {
-                            //     if (profit < trallingProfit - 0.05) {
-                            //         cond3 = true;
-                            //     }
-
-                            // }
-                            // trallingProfit =  buyPrice
+                            if (trallingProfit < profit) {
+                                trallingProfit = profit;
+                            } else {
+                                if (trallingProfit - profit >= 0.05 && preBar.close > buyPrice) {
+                                    cond3 = true;
+                                }
+                            }
                             if (cond1 || cond2 || cond3 || cond4) {
                                 if (preBar.close < buyPrice * 0.95 || preBar.close > buyPrice) {
                                     let reason = cond1 ? `RSI ${rsi[i]}` : "";
                                     reason = cond2 ? `Cross MA10` : reason;
-                                    reason = cond3 ? `Trailling ${profit.toFixed(3)}`: reason;
+                                    reason = cond3 ? `Trailling ${profit.toFixed(3)} - ${trallingProfit.toFixed(3)}`: reason;
                                     reason =  cond4 ? `Take Profit: ${profit.toFixed(3)}` : reason;
                                     chart1h.sell(i,reason);
                                 }

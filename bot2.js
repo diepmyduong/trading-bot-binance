@@ -80,9 +80,9 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
           var rsi = barToRSI(takeRight(this.barsShort, 15));
           // console.log(`[${this.botName}] RSI: ${last(rsi)}`);
           if (!isNew) {
-            const cond1 = last(rsi) >= 90;
+            const cond1 = last(rsi) >= 80;
             const cond2 =
-              this.buyPrice > 0 && bar.close < bar.high && bar.close / this.buyPrice - 1 >= 0.25;
+              this.buyPrice > 0 && bar.close < bar.high && bar.close / this.buyPrice - 1 >= 0.2;
             if (this.isHolding && (cond1 || cond2)) {
               this.logSellOrderRSI(last(rsi));
               await this.sell(last(this.barsShort));
@@ -178,6 +178,10 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     var wacher = new BinanceOrderWatcher(this.sellOrder);
     wacher.on("data", (order) => {
       const profit = this.buyPrice == 0 ? 0 : (order.price / this.buyPrice - 1) * 100;
+      console.log("CALCULATE PROFIT AFTER SELL");
+      console.log("Buy Price", this.buyPrice, this.buyOrder);
+      console.log("Sell Price", order.price);
+      console.log("Profit", profit);
       this.logTrading(order, profit.toFixed(4));
       this.logBalance();
       this.buyOrder = null;
@@ -256,23 +260,32 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
       if (o.side == "buy" && o.status == "closed") {
         this.buyOrder = o;
         this.buyPrice = o.price;
+        console.log(`FIND BUY ORDER: ${this.buyOrder.id} Price: ${this.buyPrice}`);
         break;
       }
     }
     const openingOrders = await binanceClient.fetchOpenOrders(this.symbol);
+    console.log(`FETCH OPENING ORDER: ${openingOrders.length}`);
     if (openingOrders.length > 0) {
       const order = openingOrders[0];
       this.isHolding = true;
       if (order.side == "buy") {
         this.buyOrder = order;
         this.buyPrice = order.price;
+        console.log(`UPDATE OPENING BUY ORDER: ${this.buyOrder.id} Price: ${this.buyPrice}`);
         this.watchOrder(order);
       } else {
         // let buyPrice = this.buyOrder.price;
         this.sellOrder = order;
+        console.log(
+          `UPDATE OPENING SELL ORDER: ${this.sellOrder.id} Price: ${this.sellOrder.price}`
+        );
         var wacher = new BinanceOrderWatcher(this.sellOrder);
         wacher.on("data", (order) => {
           const profit = this.buyPrice == 0 ? 0 : (order.price / this.buyPrice - 1) * 100;
+          console.log(
+            `INIT CALCULATE PROFIT: Buy Price: ${this.buyPrice}, Sell Price: ${order.price}, Profit: ${profit}`
+          );
           this.logTrading(order, profit);
           this.logBalance();
           this.isHolding = false;
@@ -283,6 +296,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
       const assetBalance = balances[this.asset];
       const market = binanceClient.market(this.symbol);
       if (assetBalance.free * 0.99999 >= market.limits.amount.min) {
+        console.log("INIT STATE SELLING", assetBalance);
         this.isHolding = true;
       }
     }
