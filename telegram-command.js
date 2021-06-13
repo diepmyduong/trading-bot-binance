@@ -215,7 +215,7 @@ bot.onText(/^\/stats$/, async (msg, match) => {
       marketProfit.toFixed(4),
       market.capital,
       ((marketProfit / capital) * 100).toFixed(4),
-      market.buyPrice.toFixed(4),
+      get(market, "buyPrice", 0).toFixed(4),
       ((stickers[`${market.asset}/${market.base}`].last / market.buyPrice - 1) * 100).toFixed(4),
     ]);
   }
