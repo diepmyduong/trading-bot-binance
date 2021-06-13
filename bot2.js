@@ -237,7 +237,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
     const fetchedOrder = await binanceClient.fetchOrder(order.id, this.symbol);
     if (fetchedOrder.status == "open") {
       await binanceClient.cancelOrder(fetchedOrder.id).catch((err) => {
-        console.log(`Cancel ORDER ERROR: ${err.message}`);
+        this.logger.info(`Cancel ORDER ERROR: ${err.message}`);
       });
     }
     return fetchedOrder;
