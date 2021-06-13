@@ -87,7 +87,7 @@ bot.onText(/^\/restartall$/, async (msg, match) => {
       bot.sendMessage(msg.chat.id, `restart bot ${app.name}`);
       pm2.restart(app.name, (err) => {
         if (err) return bot.sendMessage(msg.chat.id, err.message);
-        setTimeout(() => restartApp(index + 1), 5000);
+        setTimeout(() => restartApp(index + 1), 20000);
       });
     } else {
       bot.sendMessage(msg.chat.id, `Đã restart tất cả`);
