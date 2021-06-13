@@ -77,10 +77,10 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       this.tfShortSocket.on("data", async (bar) => {
         try {
           const isNew = this.updateBar("short", bar);
-          var rsi = barToRSI(takeRight(this.barsShort, 15));
+          var rsi = barToRSI(takeRight(this.barsShort, 16));
           // console.log(`[${this.botName}] RSI: ${last(rsi)}`);
           if (!isNew) {
-            const cond1 = last(rsi) >= 80;
+            const cond1 = last(rsi) >= 90;
             const cond2 =
               this.buyPrice > 0 && bar.close < bar.high && bar.close / this.buyPrice - 1 >= 0.2;
             if (this.isHolding && (cond1 || cond2)) {
