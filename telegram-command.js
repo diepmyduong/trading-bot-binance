@@ -403,9 +403,10 @@ async function getBalanceTableText() {
   const balances = await binanceClient.fetchBalance();
   const tableMsg = table([
     ["STT", "Asset", "Free", "Locked"],
-    ...balances.info.balances
-      .filter((b) => assets.includes(b.asset))
-      .map((a, index) => [index + 1, a.asset, a.free, a.locked]),
+    ...sortBy(
+      balances.info.balances.filter((b) => assets.includes(b.asset)),
+      "asset"
+    ).map((a, index) => [index + 1, a.asset, a.free, a.locked]),
   ]);
   return tableMsg;
 }
