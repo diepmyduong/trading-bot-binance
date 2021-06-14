@@ -1,4 +1,4 @@
-const { uniq, get, set, take, takeRight, sumBy } = require("lodash");
+const { uniq, get, set, take, takeRight, sumBy, sortBy } = require("lodash");
 const TelegramBot = require("node-telegram-bot-api");
 const { ReplyManager } = require("node-telegram-operation-manager");
 const pm2 = require("pm2");
@@ -198,8 +198,9 @@ bot.onText(/^\/stats$/, async (msg, match) => {
   const stickers = await binanceClient.fetchTickers(
     Object.values(data.markets).map((m) => `${m.asset}/${m.base}`)
   );
-  for (var i = 0; i < Object.values(data.markets).length; i++) {
-    var market = Object.values(data.markets)[i];
+  const markets = sortBy(Object.values(data.markets), "asset");
+  for (var i = 0; i < markets.length; i++) {
+    var market = markets[i];
     var marketProfit = market.sellCost - market.buyCost + market.holdingCost;
     buy += market.buyCost;
     sell += market.sellCost;
@@ -410,9 +411,9 @@ async function getBalanceTableText() {
 }
 
 async function getApps() {
-  return await new Promise((resolve, reject) => pm2.list((err, list) => resolve(list))).then(
-    (list) => list.filter((a) => a.pm2_env.BOT_NAME)
-  );
+  return await new Promise((resolve, reject) => pm2.list((err, list) => resolve(list)))
+    .then((list) => list.filter((a) => a.pm2_env.BOT_NAME))
+    .then((res) => sortBy(res, "pm2_env.BOT_NAME"));
 }
 
 function writeJSON(data, cb) {

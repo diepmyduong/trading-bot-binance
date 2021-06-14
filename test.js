@@ -12,9 +12,12 @@ const fs = require("fs");
   // await binanceClient.fetchTickers(["HARD/USDT"]).then((res) => {
   //   console.log(JSON.stringify(res, null, 2));
   // });
-  await binanceClient.loadMarkets();
-  const market = binanceClient.market("GTC/USDT");
-  console.log(JSON.stringify(market, null, 2));
+  // await binanceClient.loadMarkets();
+  // const market = binanceClient.market("GTC/USDT");
+  // console.log(JSON.stringify(market, null, 2));
+  await binanceClient.fetch(["HARD/USDT"]).then((res) => {
+    console.log(JSON.stringify(res, null, 2));
+  });
 })();
 
 // (async () => {
