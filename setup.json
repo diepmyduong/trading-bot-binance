@@ -1,0 +1,240 @@
+{
+    "botName": "FIOUSDT",
+    "asset": "FIO",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "FISUSDT",
+    "asset": "FIS",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "GTCUSDT",
+    "asset": "GTC",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "GTOUSDT",
+    "asset": "GTO",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "HARDUSDT",
+    "asset": "HARD",
+    "base": "HUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "JUVUSDT",
+    "asset": "JUV",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "KEYUSDT",
+    "asset": "KEY",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "KSMUSDT",
+    "asset": "KSM",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "LINKUSDT",
+    "asset": "LINK",
+    "base": "LUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "LTCUSDT",
+    "asset": "LTC",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "MATICUSDT",
+    "asset": "MATIC",
+    "base": "MAUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "MITHUSDT",
+    "asset": "MITH",
+    "base": "MUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "NBSUSDT",
+    "asset": "NBS",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "PAXUSDT",
+    "asset": "PAX",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "PSGUSDT",
+    "asset": "PSG",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "RUNEUSDT",
+    "asset": "RUNE",
+    "base": "RUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "SANDUSDT",
+    "asset": "SAND",
+    "base": "SUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "SLPUSDT",
+    "asset": "SLP",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "SNXUSDT",
+    "asset": "SNX",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "SOLUSDT",
+    "asset": "SOL",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "STPTUSDT",
+    "asset": "STPT",
+    "base": "SUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "SUPERUSDT",
+    "asset": "SUPER",
+    "base": "SUUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "SUSHIUSDT",
+    "asset": "SUSHI",
+    "base": "SUUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "TFUELUSDT",
+    "asset": "TFUEL",
+    "base": "TFUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "TROYUSDT",
+    "asset": "TROY",
+    "base": "TUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "UTKUSDT",
+    "asset": "UTK",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "WAVESUSDT",
+    "asset": "WAVES",
+    "base": "WAUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "WINGUSDT",
+    "asset": "WING",
+    "base": "WUSDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "WRXUSDT",
+    "asset": "WRX",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}
+{
+    "botName": "ZENUSDT",
+    "asset": "ZEN",
+    "base": "USDT",
+    "capital": 50,
+    "tfLong": "1h",
+    "tfShort": "15m"
+}

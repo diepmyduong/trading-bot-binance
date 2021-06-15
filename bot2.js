@@ -78,11 +78,11 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
         try {
           const isNew = this.updateBar("short", bar);
           var rsi = barToRSI(takeRight(this.barsShort, 16));
+          var profit = bar.close / this.buyPrice - 1;
           // console.log(`[${this.botName}] RSI: ${last(rsi)}`);
           if (!isNew) {
-            const cond1 = last(rsi) >= 85;
-            const cond2 =
-              this.buyPrice > 0 && bar.close < bar.high && bar.close / this.buyPrice - 1 >= 0.2;
+            const cond1 = last(rsi) >= 90 && profit > 0.1;
+            const cond2 = this.buyPrice > 0 && bar.close < bar.high && profit >= 0.2;
             if (this.isHolding && (cond1 || cond2)) {
               this.logSellOrderRSI(last(rsi));
               await this.sell(last(this.barsShort));
@@ -143,10 +143,12 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       await this.closeOrder(this.sellOrder);
       this.sellOrder = null;
     }
-    const price = barShort.close;
-    const qty = this.capital / barShort.close;
+    const ticker = await binanceClient.fetchTicker(this.symbol);
+    const price = ticker.ask;
+    const qty = this.capital / price;
+
     this.buyOrder = await binanceClient.createLimitBuyOrder(this.symbol, qty, price);
-    this.buyPrice = this.buyOrder.price;
+    this.buyPrice = price;
     this.watchOrder(this.buyOrder);
     this.logBuyOrderSended(this.buyOrder);
     this.isHolding = true;

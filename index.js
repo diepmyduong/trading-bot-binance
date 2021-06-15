@@ -102,7 +102,7 @@ app.get("/api/order", async (req, res) => {
   console.log(req.url, req.query);
   try {
     const { asset, base } = req.query;
-    const orders = await binanceClient.fetchOpenOrders(`${asset}/${base}`);
+    const orders = await binanceClient.fetchOrders(`${asset}/${base}`);
     res.json(orders);
   } catch (err) {
     res.status(500).send(err.message);

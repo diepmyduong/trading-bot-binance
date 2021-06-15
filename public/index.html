@@ -191,7 +191,7 @@
                 getBalance().then(balance => {
                     const accountList = document.getElementById('account_list').value.split(',').map(t => t.trim());
 
-                    document.getElementById('account').innerText = balance.info.balances.filter(a => accountList.includes(a.asset)).map(a => `${a.asset}: Free (${a.free}) - Locked: (${a.locked})`).join('\n');
+                    document.getElementById('account').innerText = balance.info.balances.filter(a => parseFloat(a.free) + parseFloat(a.locked) > 0).map(a => `${a.asset}: Free (${a.free}) - Locked: (${a.locked})`).join('\n');
                 })
             }
             

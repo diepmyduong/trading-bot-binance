@@ -1,4 +1,4 @@
-const { uniq, get, set, take, takeRight, sumBy, sortBy } = require("lodash");
+const { uniq, get, set, take, takeRight, sumBy, sortBy, keyBy } = require("lodash");
 const TelegramBot = require("node-telegram-bot-api");
 const { ReplyManager } = require("node-telegram-operation-manager");
 const pm2 = require("pm2");
@@ -143,6 +143,34 @@ bot.onText(/^\/add$/, async (msg, match) => {
         name: config.botName,
       });
     });
+});
+bot.onText(/^\/setup$/, async (msg, match) => {
+  const data = require("./data.json");
+  const apps = await getApps().then((a) => keyBy(a, "pm2_env.BOT_NAME"));
+  const markets = sortBy(Object.values(data.markets), "asset");
+  const setup = (index) => {
+    var market = markets[index];
+    if (!market) return bot.sendMessage(msg.chat.id, "Đã setup hết");
+    const botName = `${market.asset}${market.base}`;
+    if (apps[botName]) return setup(index + 1);
+    bot.sendMessage(msg.chat.id, `Setup up bot ${botName}`);
+    pm2.start({
+      env: {
+        BOT_NAME: botName,
+        ASSET: market.asset,
+        BASE: market.base,
+        CAPITAL: market.capital.toString(),
+        TF_LONG: "1h",
+        TF_SHORT: "15m",
+      },
+      script: "trade.js",
+      name: botName,
+    });
+    setTimeout(() => {
+      setup(index + 1);
+    }, 15000);
+  };
+  setup(0);
 });
 
 bot.onText(/^\/balance$/, async (msg, match) => {
