@@ -277,6 +277,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
 
   async validateInitState() {
     const orders = await binanceClient.fetchOrders(this.symbol);
+    const hasLastSell = false;
     for (var j = orders.length - 1; j >= 0; j--) {
       const o = orders[j];
       if (o.side == "buy" && o.status == "closed") {
@@ -284,6 +285,9 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
         this.buyPrice = o.price;
         console.log(`FIND BUY ORDER: ${this.buyOrder.id} Price: ${this.buyPrice}`);
         break;
+      }
+      if (o.side == "sell" && o.status == "closed") {
+        hasLastSell = true;
       }
     }
     const openingOrders = await binanceClient.fetchOpenOrders(this.symbol);
@@ -318,7 +322,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
       const balances = await this.logBalance();
       const assetBalance = balances[this.asset];
       const market = binanceClient.market(this.symbol);
-      if (assetBalance.free >= market.limits.amount.min) {
+      if (assetBalance.free >= market.limits.amount.min && !hasLastSell) {
         console.log("INIT STATE SELLING", assetBalance);
         this.isHolding = true;
       }
