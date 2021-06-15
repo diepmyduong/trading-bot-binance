@@ -277,7 +277,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
 
   async validateInitState() {
     const orders = await binanceClient.fetchOrders(this.symbol);
-    const hasLastSell = false;
+    let hasLastSell = false;
     for (var j = orders.length - 1; j >= 0; j--) {
       const o = orders[j];
       if (o.side == "buy" && o.status == "closed") {
