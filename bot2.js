@@ -118,8 +118,9 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             if (cond1 || cond2) {
               if (
                 this.buyPrice == 0 ||
+                barLong.close < smaLong ||
                 preBar.close < this.buyPrice * 0.95 ||
-                preBar.close > this.buyPrice
+                preBar.close > this.buyPrice * 1.01
               ) {
                 this.logSellOrder(preBar, smaShort2);
                 await this.sell(barShort);

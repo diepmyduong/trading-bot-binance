@@ -27,7 +27,9 @@ app.post("/api/order/buy", async (req, res) => {
   return res.status(500).send("Blocked");
   console.log(req.url, req.body);
   try {
-    const { asset, base, price, balance } = req.body;
+    const { asset, base, balance } = req.body;
+    const ticker = await binanceClient.fetchTicker(`${asset}/${base}`);
+    const price = ticker.ask;
     const qty = Math.floor(balance / price);
     const order = await binanceClient.createLimitBuyOrder(`${asset}/${base}`, qty, price);
     // console.log("balance, price", balance, price, qty);
