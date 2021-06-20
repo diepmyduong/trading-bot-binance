@@ -24,7 +24,7 @@ app.get("/api/kline", async (req, res) => {
 });
 
 app.post("/api/order/buy", async (req, res) => {
-  // return res.status(500).send("Blocked");
+  return res.status(500).send("Blocked");
   console.log(req.url, req.body);
   try {
     const { asset, base, balance } = req.body;
@@ -44,7 +44,7 @@ app.post("/api/order/buy", async (req, res) => {
 });
 
 app.post("/api/order/sell", async (req, res) => {
-  // return res.status(500).send("Blocked");
+  return res.status(500).send("Blocked");
   console.log(req.url, req.body);
   try {
     const { asset, base, price } = req.body;
