@@ -7,6 +7,7 @@ const { table } = require("table");
 const textToImage = require("text-to-image");
 const nodeHtmlToImage = require("node-html-to-image");
 const fs = require("fs");
+const { getCoin } = require("./coin360");
 
 (async () => {
   // await binanceClient.fetchTickers(["HARD/USDT"]).then((res) => {
@@ -15,9 +16,11 @@ const fs = require("fs");
   // await binanceClient.loadMarkets();
   // const market = binanceClient.market("GTC/USDT");
   // console.log(JSON.stringify(market, null, 2));
-  await binanceClient.fetch(["HARD/USDT"]).then((res) => {
-    console.log(JSON.stringify(res, null, 2));
-  });
+  // await binanceClient.fetch(["HARD/USDT"]).then((res) => {
+  //   console.log(JSON.stringify(res, null, 2));
+  // });
+  const result = await getCoin("BTC", "USD");
+  console.log(result);
 })();
 
 // (async () => {

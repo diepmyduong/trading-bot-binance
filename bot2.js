@@ -108,7 +108,8 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond2 = preBar.open < smaShort1 && preBar.close > smaShort1;
             const cond3 = preBar.low > preSar1;
             const cond5 = preBar && preBar.close <= smaShort1 * 1.05;
-            if (cond1 & cond2 && cond3 && cond5) {
+            const cond6 = require("./btc_change.json").change_24h > 0;
+            if (cond1 & cond2 && cond3 && cond5 && cond6) {
               await this.buy(barLong, smaLong, preBar, smaShort1, barShort);
             }
           } else {
