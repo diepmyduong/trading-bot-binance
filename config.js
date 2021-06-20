@@ -10,5 +10,6 @@ module.exports = {
     telegramToken: process.env.TELEGRAM_TOKEN,
     telegramChatId: process.env.TELEGRAM_CHAT_ID,
     telegramCommandToken: process.env.TELEGRAM_COMMAND_TOKEN,
+    version: process.env.VERSION || "bot2.js",
   },
 };

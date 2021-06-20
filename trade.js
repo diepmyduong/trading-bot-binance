@@ -1,4 +1,6 @@
-const TradingBot = require("./bot2");
+const { config } = require("./config");
+
+const TradingBot = require("./" + config.version);
 
 (async function run() {
   const config = {
