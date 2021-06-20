@@ -81,7 +81,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
           var profit = bar.close / this.buyPrice - 1;
           // console.log(`[${this.botName}] RSI: ${last(rsi)}`);
           if (!isNew) {
-            const cond1 = last(rsi) >= 85 && profit > 0.05;
+            const cond1 = last(rsi) >= 90 && profit > 0.1;
             const cond2 = this.buyPrice > 0 && bar.close < bar.high && profit >= 0.2;
             if (this.isHolding && (cond1 || cond2)) {
               this.logSellOrderRSI(last(rsi));
@@ -100,30 +100,28 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             period: 10,
             values: takeRight(this.barsShort, 11).map((b) => b.close),
           });
+          const smaShort2_1 = smaShort2 * 1.03;
+          const smaShort2_2 = smaShort2 * 0.97;
           const sarValue = barToSAR(takeRight(this.barsShort, 50));
           const [preSar1, preSar2] = takeRight(sarValue, 2);
           if (!this.isHolding) {
             // Buy
-            const cond1 = barLong.close > smaLong;
-            const cond2 = preBar.open < smaShort1 && preBar.close > smaShort1;
-            const cond3 = preBar.low > preSar1;
-            const cond5 = preBar && preBar.close <= smaShort1 * 1.05;
-            if (cond1 & cond2 && cond3 && cond5) {
-              await this.buy(barLong, smaLong, preBar, smaShort1, barShort);
+            // const cond1 = barLong.close > smaLong;
+            const cond1 = preBar && preBar.low < smaShort2_2;
+            if (cond1) {
+              await this.buy(preBar, smaShort2_2);
             }
           } else {
-            const cond1 = last(rsi) >= 85;
-            const cond2 = preBar && preBar.close < smaShort2;
+            const cond1 = preBar && preBar.high > smaShort2_1 && preBar.close < smaShort2_1;
+            const cond2 = preBar && preBar.close < this.buyPrice * 0.99;
+            const cond3 = preBar.close > this.buyPrice * 1.015;
             // Sell
-            if (cond1 || cond2) {
-              if (
-                this.buyPrice == 0 ||
-                barLong.close < smaLong ||
-                preBar.close < this.buyPrice * 0.95
-              ) {
-                this.logSellOrder(preBar, smaShort2);
-                await this.sell(barShort);
-              }
+            if (cond1 || cond2 || cond3) {
+              let reason = cond1 ? `Take Profit` : "";
+              reason = cond2 ? `Stop loss` : reason;
+              reason = cond3 ? `Take Profit 2%` : reason;
+              this.logSellOrder(reason);
+              await this.sell();
             }
           }
         } catch (err) {
@@ -136,9 +134,9 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     }
   }
 
-  async buy(barLong, smaLong, preBar, smaShort1, barShort) {
+  async buy(preBar, smaShort) {
     await this.checkBalanceValid();
-    this.logBuyOrder(barLong, smaLong, preBar, smaShort1);
+    this.logBuyOrder(preBar, smaShort);
     if (this.sellOrder) {
       await this.closeOrder(this.sellOrder);
       this.sellOrder = null;
@@ -154,10 +152,9 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     this.isHolding = true;
   }
 
-  async sell(barShort) {
+  async sell() {
     const balances = await binanceClient.fetchBalance();
     const sellQty = balances[this.asset].total;
-    const sellPrice = barShort.close;
     const market = await binanceClient.market(this.symbol);
     if (sellQty < market.limits.amount.min) {
       this.isHolding = false;
@@ -221,9 +218,8 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       );
     }
   }
-  logSellOrder(preBar, smaShort2) {
-    this.logger.info(`[${this.botName}] Ready to Sell With Info
-Pre Bar Close: ${preBar.close} < SMA Short: ${smaShort2}`);
+  logSellOrder(reason) {
+    this.logger.info(`[${this.botName}] Ready to Sell With Info ${reason}`);
   }
   logSellOrderRSI(rsi) {
     this.logger.info(`[${this.botName}] Ready to Sell With Info: RSI: ${rsi} > 90`);
@@ -239,10 +235,10 @@ Pre Bar Close: ${preBar.close} < SMA Short: ${smaShort2}`);
       `[${this.botName}][${order.id}] Sell Order Qty: ${order.amount} - Price: ${order.price} - Filled: ${order.filled} - Cost: ${order.cost}`
     );
   }
-  logBuyOrder(barLong, smaLong, preBar, smaShort1) {
-    this.logger.info(`[${this.botName}] Ready to Buy With Info
-Bar Long Close: ${barLong.close} > SMA Long: ${smaLong}
-Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar.close}`);
+  logBuyOrder(preBar, smaShort) {
+    this.logger.info(
+      `[${this.botName}] Ready to Buy With Info. Pre Bar Low: ${preBar.low} < SMA - 3%: ${smaShort}`
+    );
   }
 
   async closeOrder(order) {

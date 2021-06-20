@@ -144,6 +144,55 @@ bot.onText(/^\/add$/, async (msg, match) => {
       });
     });
 });
+bot.onText(/^\/add2$/, async (msg, match) => {
+  const apps = await getApps();
+  bot.sendMessage(msg.chat.id, `Hãy đặt tên cho Bot?`);
+  reply
+    .register(msg.from.id, (data) => {
+      config;
+      const app = apps.find((a) => a.pm2_env.BOT_NAME == data.text);
+      if (app) {
+        bot.sendMessage(msg.chat.id, `Tên bot đã tồn tại.`);
+        return { repeat: true };
+      }
+      bot.sendMessage(msg.chat.id, `Asset?`);
+      return { botName: data.text };
+    })
+    .register(msg.from.id, (data) => {
+      bot.sendMessage(msg.chat.id, "Base?");
+      return { ...data.previousData, asset: data.text };
+    })
+    .register(msg.from.id, (data) => {
+      bot.sendMessage(msg.chat.id, "Vốn?");
+      return { ...data.previousData, base: data.text };
+    })
+    .register(msg.from.id, (data) => {
+      bot.sendMessage(msg.chat.id, "Khung thời gian lớn (1d)?");
+      return { ...data.previousData, capital: data.text };
+    })
+    .register(msg.from.id, (data) => {
+      bot.sendMessage(msg.chat.id, "Khung thời gian nhỏ (1h)?");
+      return { ...data.previousData, tfLong: data.text };
+    })
+    .register(msg.from.id, (data) => {
+      const config = {
+        ...data.previousData,
+        tfShort: data.text,
+      };
+      pm2.start({
+        env: {
+          BOT_NAME: config.botName,
+          ASSET: config.asset,
+          BASE: config.base,
+          CAPITAL: config.capital,
+          TF_LONG: config.tfLong,
+          TF_SHORT: config.tfShort,
+        },
+        script: "trade-v2.js",
+        name: config.botName,
+      });
+    });
+});
 bot.onText(/^\/setup$/, async (msg, match) => {
   const data = require("./data.json");
   const apps = await getApps().then((a) => keyBy(a, "pm2_env.BOT_NAME"));
