@@ -12,10 +12,12 @@ const updateBTCChange = () =>
     var change = require("./btc_change.json");
     var newChange = data.BTC;
     if (change) {
-      if (change.change_24h < 0 && newChange.change_24h > 0) {
+      if (change.change_1h < 0 && newChange.change_1h > 0) {
         bot.sendMessage(
           config.telegramChatId,
-          "BITCOIN Thay đổi tăng trong 24h qua, có thể trade rồi!!!!!"
+          `BITCOIN Thay đổi tăng ${change.change_1h.toFixed(
+            2
+          )}% trong 1h qua, có thể trade rồi!!!!!`
         );
       }
     }

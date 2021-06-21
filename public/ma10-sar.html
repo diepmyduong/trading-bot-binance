@@ -197,14 +197,19 @@
                                     cond3 = true;
                                 }
                             }
+                            const cond5 = preBar.close < buyPrice * 0.95;
+                            const cond6 = preBar.close > buyPrice * 1.1;
                             if (cond1 || cond2 || cond3 || cond4) {
-                                if (preBar.close < buyPrice * 0.95 || preBar.close > buyPrice) {
+                                if (cond5 || cond6) {
                                     let reason = cond1 ? `RSI ${rsi[i]}` : "";
                                     reason = cond2 ? `Cross MA10` : reason;
                                     reason = cond3 ? `Trailling ${profit.toFixed(3)} - ${trallingProfit.toFixed(3)}`: reason;
-                                    reason =  cond4 ? `Take Profit: ${profit.toFixed(3)}` : reason;
+                                    reason =  cond4 ? `TakeProfit: ${profit.toFixed(3)}` : reason;
+                                    reason =  cond5 ? `Stoploss` : reason;
+                                    reason =  cond6 ? `TakeProfit: ${profit.toFixed(3)}` : reason;
                                     chart1h.sell(i,reason);
                                 }
+                                
                             }
                             
                         }
