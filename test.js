@@ -9,19 +9,20 @@ const nodeHtmlToImage = require("node-html-to-image");
 const fs = require("fs");
 const { getCoin } = require("./coin360");
 
-(async () => {
-  // await binanceClient.fetchTickers(["HARD/USDT"]).then((res) => {
-  //   console.log(JSON.stringify(res, null, 2));
-  // });
-  // await binanceClient.loadMarkets();
-  // const market = binanceClient.market("GTC/USDT");
-  // console.log(JSON.stringify(market, null, 2));
-  // await binanceClient.fetch(["HARD/USDT"]).then((res) => {
-  //   console.log(JSON.stringify(res, null, 2));
-  // });
-  const result = await getCoin("BTC", "USD");
-  console.log(result);
-})();
+// (async () => {
+//   // await binanceClient.fetchTickers(["HARD/USDT"]).then((res) => {
+//   //   console.log(JSON.stringify(res, null, 2));
+//   // });
+//   // await binanceClient.loadMarkets();
+//   // const market = binanceClient.market("GTC/USDT");
+//   // console.log(JSON.stringify(market, null, 2));
+//   // await binanceClient.fetch(["HARD/USDT"]).then((res) => {
+//   //   console.log(JSON.stringify(res, null, 2));
+//   // });
+//   const result = await getCoin("BTC", "USD");
+//   console.log(result);
+//   binanceClient.marin;
+// })();
 
 // (async () => {
 //   var asset = "TFUEL";
@@ -107,27 +108,27 @@ const { getCoin } = require("./coin360");
 //   orders.forEach((order) => console.log("order", order.id, order.type, order.price));
 // });
 
-// scan(
-//   { period: 10, intervals: ["30m", "4h"] },
-//   async ([bars_1h, bars_1d]) => {
-//     var sma10_1d = sma({ period: 10, values: bars_1d.map((b) => b.close) })[0];
-//     const preBar2 = first(takeRight(bars_1h, 3));
-//     const preBar1 = first(takeRight(bars_1h, 2));
-//     var sma10_1h = sma({ period: 10, values: bars_1h.map((b) => b.close) })[0];
-//     const cond1 = last(bars_1d).close > sma10_1d;
-//     const cond2 = preBar2.close < sma10_1h && preBar1.close > sma10_1h;
-//     if (cond1 & cond2) {
-//       console.log("=====>");
-//       console.log("sma10_1d", sma10_1d);
-//       console.log("chart1d.currentBar.close", last(bars_1d).close);
-//       console.log("preBar2.close", preBar2.close);
-//       console.log("preBar1.close", preBar1.close);
-//       console.log("sma10_1h", sma10_1h);
-//       console.log("<=====");
-//     }
-//     return cond1 & cond2;
-//   },
-//   ({ market, data }) => {
-//     console.log(`${market.info.symbol}`);
-//   }
-// );
+scan(
+  { period: 10, intervals: ["15m", "1h"] },
+  async ([bars_1h, bars_1d]) => {
+    var sma10_1d = sma({ period: 10, values: bars_1d.map((b) => b.close) })[0];
+    const preBar2 = first(takeRight(bars_1h, 3));
+    const preBar1 = first(takeRight(bars_1h, 2));
+    var sma10_1h = sma({ period: 10, values: bars_1h.map((b) => b.close) })[0];
+    const cond1 = last(bars_1d).close < sma10_1d;
+    const cond2 = preBar2.close > sma10_1h && preBar1.close < sma10_1h;
+    if (cond1 & cond2) {
+      console.log("=====>");
+      console.log("sma10_1d", sma10_1d);
+      console.log("chart1d.currentBar.close", last(bars_1d).close);
+      console.log("preBar2.close", preBar2.close);
+      console.log("preBar1.close", preBar1.close);
+      console.log("sma10_1h", sma10_1h);
+      console.log("<=====");
+    }
+    return cond1 & cond2;
+  },
+  ({ market, data }) => {
+    console.log(`${market.info.symbol}`);
+  }
+);

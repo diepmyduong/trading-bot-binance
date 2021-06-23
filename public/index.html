@@ -3,25 +3,33 @@
         <title>Trading View</title>
     </head>
     <body>
-        <h2>Tài khoản <input id="account_list" value="BNB,USDT,ETH" placeholder="BNB,USDT,..."/><button onclick="fetchBalance()">Reload</button></h2>
-        <pre id="account"></pre>
-        <h2>Lệnh đang mở <button onclick="fetchOpenOrder()"">Reload</button><button onclick="cancelOrder()">Huỷ tất cả lệnh </button></h2>
-        <div id="open_orders"></div>
-        <h2>Cấu hình</h2>
-        <div>Symbol <input id="asset" placeholder="BNB" value="BNB"/>/<input id="base" placeholder="USDT" value="USDT" /> <button onclick="run()" id>Trade</button></div>
-        <div>Time Frame Dài <input id="tf_long" placeholder="15m" value="1d" /> Số nến: <input type="number" id="tf_long_period" placeholder="100" value="100"/></div>
-        <div>Time Frame Ngắn <input id="tf_short" placeholder="5m" value="1h" /> Số nến: <input type="number" id="tf_short_period" placeholder="260" value="180"/></div>
-        <div>Ngày bắt đầu <input type="date" id="startTime"/> </div>
-        <h2>Đặt lệnh</h2>
-        <div>Số tiền: <input type="number" id="order_balance"/> Giá: <input id="order_price" /> <button onclick="getCurrentPrice()">Giá hiện tại</button><button onclick="order('buy')">Mua</button><button onclick="order('sell')">Bán</button></div>
-        <pre id="order"></pre>
-        <h2>Khung 1 Ngày</h2>
-        <div id="chart-1d"></div>
-        <h2>Khung 1 Giờ</h2>
-        <div id="chart-1h"></div>
-        <h2>Trade Log</h2>
-        <h3>Balance <span id="balance"></span></h3>
-        <pre id="logs"></pre>
+        <div>
+            <div style="width: 50%; float: left;">
+                <h2>Tài khoản <input id="account_list" value="BNB,USDT,ETH" placeholder="BNB,USDT,..."/><button onclick="fetchBalance()">Reload</button></h2>
+                <pre id="account"></pre>
+                <h2>Lệnh đang mở <button onclick="fetchOpenOrder()"">Reload</button><button onclick="cancelOrder()">Huỷ tất cả lệnh </button></h2>
+                <div id="open_orders"></div>
+                <h2>Cấu hình</h2>
+                <div>Symbol <input id="asset" placeholder="BNB" value="BNB"/>/<input id="base" placeholder="USDT" value="USDT" /> <button onclick="run()" id>Trade</button></div>
+                <div>Time Frame Dài <input id="tf_long" placeholder="15m" value="1d" /> Số nến: <input type="number" id="tf_long_period" placeholder="100" value="100"/></div>
+                <div>Time Frame Ngắn <input id="tf_short" placeholder="5m" value="1h" /> Số nến: <input type="number" id="tf_short_period" placeholder="260" value="180"/></div>
+                <div>Ngày bắt đầu <input type="date" id="startTime"/> </div>
+                <h2>Đặt lệnh</h2>
+                <div>Số tiền: <input type="number" id="order_balance"/> Giá: <input id="order_price" /> <button onclick="getCurrentPrice()">Giá hiện tại</button><button onclick="order('buy')">Mua</button><button onclick="order('sell')">Bán</button></div>
+                <pre id="order"></pre>
+                <h2>Khung 1 Ngày</h2>
+                <div id="chart-1d"></div>
+                <h2>Khung 1 Giờ</h2>
+                <div id="chart-1h"></div>
+                <h2>Trade Log</h2>
+                <h3>Balance <span id="balance"></span></h3>
+                <pre id="logs"></pre>
+            </div>
+            <div style="width: 50%; float: right;">
+                <iframe src="https://coin360.com/widget/map.html" frameborder="0" title="Coin360.com: Cryptocurrency Market State" width="400" height="300"></iframe>
+            </div>
+        </div>
+       
         <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3.1.0/dist/browser.es6.js" integrity="sha256-R9YL+ZtF/v+CbnaDyUnlKcvl814aC4LqLayQi2wOSFI=" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>

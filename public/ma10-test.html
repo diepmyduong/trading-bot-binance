@@ -165,18 +165,21 @@
                         const smaValue_1h_2 = smaValue_1h * 0.97;
                         const preBar = bars[i - 1];
                         const preSar = sarValue[i - 1];
+                        const preRsi1 = rsi[i -1];
+                        const preRsi2 = rsi[i -2];
                        
                         if (!isHold) {
                             // console.log('low', preBar.low, 'smaValue_1h_2', smaValue_1h_2,  )
                                 // Buy
                             const cond1 = preBar && preBar.low < smaValue_1h_2 ;
-                            if (cond1) {
+                            const cond2 = preRsi2 && preRsi1 && preRsi1 > preRsi2;
+                            if (cond1 && cond2) {
                                 chart1h.buy(i);
                             }
                         } else {
                             const cond1 = preBar  && preBar.high > smaValue_1h_1 && bar.open < smaValue_1h_1;
                             const cond2 = preBar  && preBar.close < buyPrice * 0.99;
-                            const cond3 = false // preBar.close > buyPrice * 1.03;
+                            const cond3 = preBar.close > buyPrice * 1.03;
                             if (cond1 || cond2 || cond3) {
                                 let reason = cond1 ? `Take Profit` : "";
                                 reason = cond2 ? `Stop loss` : reason;

@@ -12,14 +12,14 @@ const updateBTCChange = () =>
     var change = require("./btc_change.json");
     var newChange = data.BTC;
     if (change) {
-      if (change.change_1h < 0 && newChange.change_1h > 0) {
-        bot.sendMessage(
-          config.telegramChatId,
-          `BITCOIN Thay đổi tăng ${change.change_1h.toFixed(
-            2
-          )}% trong 1h qua, có thể trade rồi!!!!!`
-        );
-      }
+      // if (change.change_1h < 0 && newChange.change_1h > 0) {
+      //   bot.sendMessage(
+      //     config.telegramChatId,
+      //     `BITCOIN Thay đổi tăng ${change.change_1h.toFixed(
+      //       2
+      //     )}% trong 1h qua, có thể trade rồi!!!!!`
+      //   );
+      // }
     }
     writeJSON(newChange);
   });

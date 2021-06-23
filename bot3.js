@@ -77,13 +77,14 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       this.tfShortSocket.on("data", async (bar) => {
         try {
           const isNew = this.updateBar("short", bar);
-          var rsi = barToRSI(takeRight(this.barsShort, 16));
+          var rsi = barToRSI(takeRight(this.barsShort, 17));
           var profit = bar.close / this.buyPrice - 1;
           // console.log(`[${this.botName}] RSI: ${last(rsi)}`);
           if (!isNew) {
             const cond1 = last(rsi) >= 90 && profit > 0.1;
-            const cond2 = this.buyPrice > 0 && bar.close < bar.high && profit >= 0.2;
-            if (this.isHolding && (cond1 || cond2)) {
+            const cond2 = this.buyPrice > 0 && bar.close < bar.high && profit >= 0.015;
+            const cond3 = this.buyPrice > 0 && profit < -0.01;
+            if (this.isHolding && (cond1 || cond2 || cond3)) {
               this.logSellOrderRSI(last(rsi));
               await this.sell(last(this.barsShort));
             }
@@ -104,11 +105,13 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
           const smaShort2_2 = smaShort2 * 0.97;
           const sarValue = barToSAR(takeRight(this.barsShort, 50));
           const [preSar1, preSar2] = takeRight(sarValue, 2);
+          const [_, preRsi1, preRsi2] = takeRight(rsi, 3);
           if (!this.isHolding) {
             // Buy
             // const cond1 = barLong.close > smaLong;
             const cond1 = preBar && preBar.low < smaShort2_2;
-            if (cond1) {
+            const cond2 = preRsi1 && preRsi2 && preRsi1 > preRsi2;
+            if (cond1 && cond2) {
               await this.buy(preBar, smaShort2_2);
             }
           } else {
