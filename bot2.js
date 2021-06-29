@@ -81,7 +81,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
           var profit = bar.close / this.buyPrice - 1;
           // console.log(`[${this.botName}] RSI: ${last(rsi)}`);
           if (!isNew) {
-            const cond1 = last(rsi) >= 85 && profit > 0.05;
+            const cond1 = last(rsi) >= 90 && profit > 0.1;
             const cond2 = this.buyPrice > 0 && bar.close < bar.high && profit >= 0.2;
             if (this.isHolding && (cond1 || cond2)) {
               this.logSellOrderRSI(last(rsi));
@@ -108,12 +108,12 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond2 = preBar.open < smaShort1 && preBar.close > smaShort1;
             const cond3 = preBar.low > preSar1;
             const cond5 = preBar && preBar.close <= smaShort1 * 1.05;
-            const cond6 = require("./btc_change.json").change_1h > 0;
+            const cond6 = require("./btc_change.json").change_24h > 1;
             if (cond1 & cond2 && cond3 && cond5 && cond6) {
               await this.buy(barLong, smaLong, preBar, smaShort1, barShort);
             }
           } else {
-            const cond1 = last(rsi) >= 85;
+            const cond1 = last(rsi) >= 90;
             const cond2 = preBar && preBar.close < smaShort2;
             // Sell
             if (cond1 || cond2) {

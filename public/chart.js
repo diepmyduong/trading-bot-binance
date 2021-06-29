@@ -264,6 +264,7 @@ class ISIndicator extends Indicator {
   colors = [];
   constructor({ chart }) {
     super(chart);
+    // setConfig("precision", 100);
     this.series = this.candleChart.chart.addBarSeries({
       upColor: "rgb(38,166,154)",
       downColor: "rgb(255,82,82)",
@@ -317,6 +318,16 @@ class ISIndicator extends Indicator {
         } else {
           color = "yellow";
         }
+        console.log(
+          new Date(b.time * 1000).toLocaleString(),
+          color,
+          ema13,
+          lastEma13,
+          macd.histogram,
+          lastMACD.histogram,
+          macd.MACD,
+          lastMACD.MACD
+        );
         this.colors.push(color);
         this.markers.push({
           time: b.time,
@@ -328,7 +339,7 @@ class ISIndicator extends Indicator {
         this.colors.push(color);
       }
     }
-    // this.series.setMarkers(this.markers);
+    this.series.setMarkers(this.markers);
   }
   update(bar) {
     if (this.bars.length >= this.period) {

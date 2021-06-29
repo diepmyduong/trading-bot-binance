@@ -1,0 +1,46 @@
+[
+  {
+    "accountAlias": "XqTiSgSgFzFz",
+    "asset": "BNB",
+    "balance": "0.00000000",
+    "crossWalletBalance": "0.00000000",
+    "crossUnPnl": "0.00000000",
+    "availableBalance": "0.00000000",
+    "maxWithdrawAmount": "0.00000000",
+    "marginAvailable": false,
+    "updateTime": 0
+  },
+  {
+    "accountAlias": "XqTiSgSgFzFz",
+    "asset": "USDT",
+    "balance": "100000.00000000",
+    "crossWalletBalance": "100000.00000000",
+    "crossUnPnl": "0.00000000",
+    "availableBalance": "100000.00000000",
+    "maxWithdrawAmount": "100000.00000000",
+    "marginAvailable": true,
+    "updateTime": 1624701508625
+  },
+  {
+    "accountAlias": "XqTiSgSgFzFz",
+    "asset": "USDC",
+    "balance": "0.00000000",
+    "crossWalletBalance": "0.00000000",
+    "crossUnPnl": "0.00000000",
+    "availableBalance": "0.00000000",
+    "maxWithdrawAmount": "0.00000000",
+    "marginAvailable": true,
+    "updateTime": 0
+  },
+  {
+    "accountAlias": "XqTiSgSgFzFz",
+    "asset": "BUSD",
+    "balance": "0.00000000",
+    "crossWalletBalance": "0.00000000",
+    "crossUnPnl": "0.00000000",
+    "availableBalance": "0.00000000",
+    "maxWithdrawAmount": "0.00000000",
+    "marginAvailable": true,
+    "updateTime": 0
+  }
+]

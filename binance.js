@@ -3,17 +3,27 @@ const axios = require("axios");
 const { config } = require("./config");
 const { EventEmitter } = require("events");
 const WebSocket = require("ws");
+// const Binance = require("node-binance-api");
+const Binance = require("binance-api-node").default;
 
 var mainnet = "https://api.binance.com/api";
 var testnet = "https://testnet.binance.vision/api";
+var testnetFuture = "https://testnet.binancefuture.com";
 
 var mainnetSocket = "wss://stream.binance.com:9443/ws";
 var testnetSocket = "wss://testnet.binance.vision/ws";
+var testnetFutureSocket = "wss://stream.binancefuture.com/ws";
 
 console.log("debug", config.debug);
 const binanceClient = new ccxt.binance({
   apiKey: config.debug ? config.testnetApiKey : config.apiKey,
   secret: config.debug ? config.testnetApiSecret : config.apiSecret,
+});
+const binance = Binance({
+  apiKey: config.debug ? config.testnetApiKey : config.apiKey,
+  apiSecret: config.debug ? config.testnetApiSecret : config.apiSecret,
+  // httpFutures: "https://testnet.binancefuture.com",
+  // wsFutures: "wss://stream.binancefuture.com",
 });
 const binanceHost = config.debug ? testnet : mainnet;
 if (config.debug) binanceClient.setSandboxMode(true);
@@ -65,4 +75,10 @@ class BinanceOrderWatcher extends EventEmitter {
   }
 }
 
-module.exports = { binanceClient, fetchKline, BinanceSocket, BinanceOrderWatcher };
+module.exports = {
+  binanceClient,
+  fetchKline,
+  BinanceSocket,
+  BinanceOrderWatcher,
+  binance,
+};
