@@ -123,7 +123,8 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             if (cond1 || cond2) {
               if (
                 this.buyPrice == 0 ||
-                (preBar.close < this.buyPrice * 0.95 &&
+                preBar.close < this.buyPrice * 0.95 ||
+                (preBar.close < this.buyPrice &&
                   (btcChange.change_1h < 0 || btcChange.change_24h < 0)) ||
                 preBar.close > this.buyPrice
               ) {
