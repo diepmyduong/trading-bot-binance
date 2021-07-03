@@ -124,8 +124,8 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
               if (
                 this.buyPrice == 0 ||
                 preBar.close < this.buyPrice * 0.95 ||
-                (preBar.close < this.buyPrice &&
-                  (btcChange.change_1h < 0 || btcChange.change_24h < 0)) ||
+                btcChange.change_1h < 0 ||
+                btcChange.change_24h < 0 ||
                 preBar.close > this.buyPrice
               ) {
                 this.logSellOrder(preBar, smaShort2);
