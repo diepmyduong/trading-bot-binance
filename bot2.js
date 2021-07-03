@@ -116,11 +116,12 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
           } else {
             const cond1 = last(rsi) >= 90;
             const cond2 = preBar && preBar.close < smaShort2;
+            const btcChange = require("./btc_change.json");
             // Sell
             if (cond1 || cond2) {
               if (
                 this.buyPrice == 0 ||
-                preBar.close < this.buyPrice * 0.95 ||
+                (preBar.close < this.buyPrice * 0.95 && btcChange.change_1h > 0) ||
                 preBar.close > this.buyPrice
               ) {
                 this.logSellOrder(preBar, smaShort2);
