@@ -84,14 +84,21 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond1 = last(rsi) >= 90 && profit > 0.1;
             const cond2 = this.buyPrice > 0 && bar.close < bar.high && profit >= 0.2;
             const btcChange = require("./btc_change.json");
-            console.log(
-              "btcChange.change_1h",
-              btcChange.change_1h,
-              "btcChange.change_24h",
-              btcChange.change_24h
-            );
             const cond3 = btcChange.change_1h < 0 && btcChange.change_24h < 0;
+            console.log(
+              "btcChange.change",
+              btcChange.change_1h,
+              btcChange.change_24h,
+              "cond1",
+              cond1,
+              "cond2",
+              cond2,
+              "cond3",
+              cond3,
+              this.isHolding
+            );
             if (this.isHolding && (cond1 || cond2 || cond3)) {
+              console.log("Sell Now");
               this.logSellOrderRSI(last(rsi));
               await this.sell(last(this.barsShort));
             }
