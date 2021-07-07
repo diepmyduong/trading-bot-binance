@@ -108,7 +108,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             // Buy
             const cond1 = barLong.close > smaLong;
             const cond2 = preBar.open < smaShort1 && preBar.close > smaShort1;
-            const cond3 = preBar.low > preSar1;
+            const cond3 = true; // preBar.low > preSar1;
             const cond5 = preBar && preBar.close <= smaShort1 * 1.05;
             const btcChange = require("./btc_change.json");
             const cond6 = btcChange.change_24h > 1 && btcChange.change_1h > 0;
