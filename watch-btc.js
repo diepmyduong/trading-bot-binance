@@ -21,6 +21,11 @@ const updateBTCChange = () =>
       //   );
       // }
     }
+    newChange = {
+      ...newChange,
+      change_24h: parseFloat(newChange.change_24h.toFixed(1)),
+      change_1h: parseFloat(newChange.change_1h.toFixed(1)),
+    };
     writeJSON(newChange);
   });
 setInterval(() => updateBTCChange(), 1000 * 60);
