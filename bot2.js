@@ -76,7 +76,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       await this.validateInitState();
       await binanceClient.loadMarkets();
       this.market = binanceClient.market(this.symbol);
-      this.precision = getMarketPrecision(market);
+      this.precision = getMarketPrecision(this.market);
       const { barsLong, barsShort } = await this.fetchInitBarData({
         longLimit: 50,
         shortLimit: 100,
