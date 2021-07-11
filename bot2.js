@@ -20,6 +20,8 @@ class TradingBot extends EventEmitter {
   buyOrder = null;
   sellOrder = null;
   buyPrice = 0;
+  precision = 0;
+  market = null;
   constructor({ botName, asset, base, capital, tfLong, tfShort }) {
     super();
     this.botName = botName;
@@ -72,6 +74,9 @@ Capital: ${this.capital}$
 Time Frame: ${this.tfLong} : ${this.tfShort}`);
       await this.validateTicker();
       await this.validateInitState();
+      await binanceClient.loadMarkets();
+      this.market = binanceClient.market(this.symbol);
+      this.precision = getMarketPrecision(market);
       const { barsLong, barsShort } = await this.fetchInitBarData({
         longLimit: 50,
         shortLimit: 100,
@@ -80,7 +85,6 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       this.barsShort = barsShort;
       this.tfLongSocket = new BinanceSocket(this.symbol2, this.tfLong);
       this.tfShortSocket = new BinanceSocket(this.symbol2, this.tfShort);
-      var socketLog = console.draft("Start Socket Log");
       this.tfLongSocket.on("data", (bar) => this.updateBar("long", bar));
       this.tfShortSocket.on("data", async (bar) => {
         try {
@@ -93,7 +97,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond2 = this.buyPrice > 0 && bar.close < bar.high && profit >= 0.2;
             const btcChange = getBTCData();
             const cond3 = btcChange.change_1h < 0 && btcChange.change_24h < 0;
-            socketLog(
+            console.log(
               `RSI: ${last(rsi)}, Profit: ${profit.toFixed(1)}, BTC 1h: ${
                 btcChange.change_1h
               }, BTC 24h: ${btcChange.change_24h}`
@@ -121,7 +125,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             // Buy
             const cond1 = barLong.close > smaLong;
             const cond2 = preBar.open < smaShort1 && preBar.close > smaShort1;
-            const cond3 = true; // preBar.low > preSar1;
+            const cond3 = preBar.low > preSar1;
             const cond5 = preBar && preBar.close <= smaShort1 * 1.05;
             const btcChange = getBTCData();
             const cond6 = btcChange.change_24h >= 1 && btcChange.change_1h >= 0;
@@ -198,10 +202,10 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       this.sellOrder = null;
     }
     const ticker = await binanceClient.fetchTicker(this.symbol);
-    const price = ticker.ask;
-    const qty = this.capital / price;
-
-    this.buyOrder = await binanceClient.createLimitBuyOrder(this.symbol, qty, price);
+    const price = ticker.last;
+    let qty = this.capital / price;
+    qty = parseFloat(toFixed(qty, this.precision));
+    this.buyOrder = await binanceClient.createMarketOrder(this.symbol, "buy", qty);
     this.buyPrice = price;
     this.watchOrder(this.buyOrder);
     this.logBuyOrderSended(this.buyOrder);
@@ -210,13 +214,14 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
 
   async sell(barShort) {
     const balances = await binanceClient.fetchBalance();
-    const sellQty = balances[this.asset].total;
-    const sellPrice = barShort.close;
-    const market = await binanceClient.market(this.symbol);
-    if (sellQty < market.limits.amount.min) {
-      this.isHolding = false;
-      throw Error("Nothing to sell: Prev Buy Order Filled Qty is Zero");
-    }
+    let sellQty = balances[this.asset].total;
+    sellQty = parseFloat(toFixed(sellQty, this.precision));
+    // const sellPrice = barShort.close;
+    // const market = await binanceClient.market(this.symbol);
+    // if (sellQty < market.limits.amount.min) {
+    //   this.isHolding = false;
+    //   throw Error("Nothing to sell: Prev Buy Order Filled Qty is Zero");
+    // }
     // let buyPrice = 0;
     if (this.buyOrder) {
       const fetchBuyOrder = await this.closeOrder(this.buyOrder);
@@ -229,25 +234,20 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       this.sellOrder = null;
       console.log("EMPTY SELL ORDER");
     }
-    const ticker = await binanceClient.fetchTicker(this.symbol);
+
     this.sellOrder = await binanceClient
-      .createLimitSellOrder(this.symbol, sellQty, ticker.bid)
-      .catch((err) => {
-        if (err.message.includes("MIN_NOTIONAL")) {
-          this.isHolding = false;
-        }
-        throw err;
+      .createMarketOrder(this.symbol, "sell", sellQty)
+      .catch(async (err) => {
+        const ticker = await binanceClient.fetchTicker(this.symbol);
+        return await binanceClient
+          .createLimitSellOrder(this.symbol, sellQty, ticker.bid)
+          .catch((err) => {
+            if (err.message.includes("MIN_NOTIONAL")) {
+              this.isHolding = false;
+            }
+            throw err;
+          });
       });
-    // this.sellOrder = await binanceClient
-    //   .createMarketOrder(this.symbol, "sell", sellQty * 0.99999, sellPrice)
-    //   .catch((err) => {
-    //     console.log(
-    //       `SELL MARKET ERROR : ${err.message}. SellQty: ${
-    //         sellQty * 0.99999
-    //       }, SellPrice: ${sellPrice}`
-    //     );
-    //     return binanceClient.createLimitSellOrder(this.symbol, sellQty, sellPrice * 0.9999);
-    //   });
     var wacher = new BinanceOrderWatcher(this.sellOrder);
     wacher.on("data", (order) => {
       const orderPrice = order.type == "market" ? order.average : order.price;
@@ -449,6 +449,16 @@ ${this.asset} Balance: Free (${assetBalance.free}) - Used: (${assetBalance.used}
       barsShort,
     }));
   }
+}
+
+function getMarketPrecision(market) {
+  const stepSize = market.info.filters.find((f) => f.filterType == "LOT_SIZE").stepSize;
+  const precision = parseInt(Math.round(-Math.log10(stepSize), 0));
+  return precision;
+}
+function toFixed(num, fixed) {
+  var re = new RegExp("^-?\\d+(?:.\\d{0," + (fixed || -1) + "})?");
+  return num.toString().match(re)[0];
 }
 
 function barToRSI(bars) {
