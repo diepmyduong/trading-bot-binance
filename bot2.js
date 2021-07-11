@@ -7,6 +7,8 @@ const { last, takeRight, get } = require("lodash");
 const { TelegramTransport } = require("./telegram-transport");
 const { config } = require("./config");
 const { EventEmitter } = require("events");
+const DraftLog = require("draftlog");
+DraftLog(console);
 
 class TradingBot extends EventEmitter {
   isHolding = false;
@@ -73,6 +75,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       this.barsShort = barsShort;
       this.tfLongSocket = new BinanceSocket(this.symbol2, this.tfLong);
       this.tfShortSocket = new BinanceSocket(this.symbol2, this.tfShort);
+      var socketLog = console.draft("Start Socket Log");
       this.tfLongSocket.on("data", (bar) => this.updateBar("long", bar));
       this.tfShortSocket.on("data", async (bar) => {
         try {
@@ -85,6 +88,11 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond2 = this.buyPrice > 0 && bar.close < bar.high && profit >= 0.2;
             const btcChange = require("./btc_change.json");
             const cond3 = btcChange.change_1h < 0 && btcChange.change_24h < 0;
+            socketLog(
+              `RSI: ${last(rsi)}, Profit: ${profit.toFixed(1)}, BTC 1h: ${
+                btcChange.change_1h
+              }, BTC 24h: ${btcChange.change_24h}`
+            );
             if (this.isHolding && (cond1 || cond2 || cond3)) {
               this.logSellOrderRSI(last(rsi));
               await this.sell(last(this.barsShort));
@@ -123,7 +131,9 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
               "5:",
               cond5,
               "6:",
-              cond6
+              cond6,
+              btcChange.change_24h,
+              btcChange.change_1h
             );
             if (cond1 & cond2 && cond3 && cond5 && cond6) {
               await this.buy(barLong, smaLong, preBar, smaShort1, barShort);
@@ -132,6 +142,25 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond1 = last(rsi) >= 90;
             const cond2 = preBar && preBar.close < smaShort2;
             const btcChange = require("./btc_change.json");
+            console.log(
+              "sell condition",
+              "1:",
+              cond1,
+              "2:",
+              cond2,
+              "3:",
+              this.buyPrice == 0,
+              "4:",
+              preBar.close < this.buyPrice * 0.95,
+              "5:",
+              btcChange.change_1h < 0,
+              "6:",
+              btcChange.change_24h < 0,
+              "7:",
+              preBar.close > this.buyPrice,
+              btcChange.change_24h,
+              btcChange.change_1h
+            );
             // Sell
             if (cond1 || cond2) {
               if (
