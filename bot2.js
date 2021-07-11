@@ -10,6 +10,11 @@ const { EventEmitter } = require("events");
 const DraftLog = require("draftlog");
 DraftLog(console);
 
+function getBTCData() {
+  delete require.cache[require.resolve("./btc_change.json")];
+  return require("./btc_change.json");
+}
+
 class TradingBot extends EventEmitter {
   isHolding = false;
   buyOrder = null;
@@ -86,7 +91,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
           if (!isNew) {
             const cond1 = last(rsi) >= 90 && profit > 0.1;
             const cond2 = this.buyPrice > 0 && bar.close < bar.high && profit >= 0.2;
-            const btcChange = require("./btc_change.json");
+            const btcChange = getBTCData();
             const cond3 = btcChange.change_1h < 0 && btcChange.change_24h < 0;
             socketLog(
               `RSI: ${last(rsi)}, Profit: ${profit.toFixed(1)}, BTC 1h: ${
@@ -118,7 +123,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond2 = preBar.open < smaShort1 && preBar.close > smaShort1;
             const cond3 = true; // preBar.low > preSar1;
             const cond5 = preBar && preBar.close <= smaShort1 * 1.05;
-            const btcChange = require("./btc_change.json");
+            const btcChange = getBTCData();
             const cond6 = btcChange.change_24h >= 1 && btcChange.change_1h >= 0;
             console.log(
               "buy condition",
@@ -141,7 +146,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
           } else {
             const cond1 = last(rsi) >= 90;
             const cond2 = preBar && preBar.close < smaShort2;
-            const btcChange = require("./btc_change.json");
+            const btcChange = getBTCData();
             console.log(
               "sell condition",
               "1:",
