@@ -128,7 +128,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond3 = preBar.low > preSar1;
             const cond5 = preBar && preBar.close <= smaShort1 * 1.05;
             const btcChange = getBTCData();
-            const cond6 = btcChange.change_24h >= 1 && btcChange.change_1h >= 1 && last(rsi) > 50;
+            const cond6 = btcChange.change_24h >= 1 && btcChange.change_1h > 0 && last(rsi) > 50;
             console.log(
               "buy condition",
               "1:",
