@@ -197,12 +197,15 @@ bot.onText(/^\/setup$/, async (msg, match) => {
   const data = require("./data.json");
   const apps = await getApps().then((a) => keyBy(a, "pm2_env.BOT_NAME"));
   const markets = sortBy(Object.values(data.markets), "asset");
+  console.log("marketes", markets.length);
   const setup = (index) => {
+    console.log("setup index", index);
     var market = markets[index];
     if (!market) return bot.sendMessage(msg.chat.id, "Đã setup hết");
     const botName = `${market.asset}${market.base}`;
     if (apps[botName]) return setup(index + 1);
     bot.sendMessage(msg.chat.id, `Setup up bot ${botName}`);
+    pm2.stop(botName);
     pm2.start({
       env: {
         BOT_NAME: botName,
