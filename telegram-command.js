@@ -16,6 +16,7 @@ bot.on("polling_error", (msg) => console.log(msg));
 
 const reply = new ReplyManager();
 bot.on("message", (msg) => {
+  console.log("msg", msg.text);
   if (!hasEntity("bot_command", msg.entities) && reply.expects(msg.from.id)) {
     let { text, entities } = msg;
     reply.execute(msg.from.id, { text, entities });
@@ -29,6 +30,10 @@ function hasEntity(entity, entities) {
 
   return entities.some((e) => e.type === entity);
 }
+
+bot.onText(/^\/regis%/, async (msg) => {
+  return bot.sendMessage(msg.chat.id, `CHAT ID: ${msg.chat.id}. FROM ID: ${msg.from.id}`);
+});
 
 bot.onText(/^\/status$/, async (msg) => {
   pm2.list(async (err, list) => {
@@ -219,6 +224,7 @@ bot.onText(/^\/setup$/, async (msg, match) => {
       name: botName,
     });
     setTimeout(() => {
+      console.log("timeout 15s");
       setup(index + 1);
     }, 15000);
   };
