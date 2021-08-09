@@ -204,7 +204,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     }
     const ticker = await binanceClient.fetchTicker(this.symbol);
     const price = ticker.last;
-    let capital = parseFloat((baseFee * 0.35).toFixed());
+    let capital = parseFloat((baseFee * 1).toFixed());
     capital = capital < this.capital ? this.capital : capital;
     let qty = capital / price;
     qty = parseFloat(toFixed(qty, this.precision));
