@@ -110,9 +110,9 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
               this.trailingPrice / this.buyPrice > 1.3 &&
               bar.close <= this.trailingPrice;
             console.log(
-              `Trailing Price: ${(this.trailingPrice / this.buyPrice).toFixed(2)}%. Diff Sell: ${(
-                bar.close / this.trailingPrice
-              ).toFixed(2)}%`
+              `Trailing Price: ${(1 - (this.trailingPrice / this.buyPrice) * 100).toFixed(
+                2
+              )}%. Diff Sell: ${(1 - (bar.close / this.trailingPrice) * 100).toFixed(2)}%`
             );
             if (this.isHolding && (cond1 || cond2 || cond3 || cond4)) {
               this.logSellOrderRSI(last(rsi));
