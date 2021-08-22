@@ -109,7 +109,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
               this.buyPrice > 0 &&
               this.trailingPrice / this.buyPrice > 1.3 &&
               bar.close <= this.trailingPrice;
-            if (buyPrice > 0) {
+            if (this.buyPrice > 0) {
               console.log(
                 `Trailing Price: ${this.trailingPrice.toFixed(3)} ${(
                   1 -
