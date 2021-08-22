@@ -112,9 +112,9 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             if (this.buyPrice > 0) {
               console.log(
                 `Trailing Price: ${this.trailingPrice.toFixed(3)} ${(
-                  1 -
-                  (this.trailingPrice / this.buyPrice) * 100
-                ).toFixed(2)}%. Diff Sell: ${(1 - (bar.close / this.trailingPrice) * 100).toFixed(
+                  (this.trailingPrice / this.buyPrice - 1) *
+                  100
+                ).toFixed(2)}%. Diff Sell: ${((bar.close / this.trailingPrice - 1) * 100).toFixed(
                   2
                 )}%`
               );
