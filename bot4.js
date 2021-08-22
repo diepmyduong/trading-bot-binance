@@ -96,8 +96,8 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
           if (!isNew) {
             if (this.buyPrice > 0) {
               const diffToChangeTrigger = bar.close / this.trailingPrice;
-              if (diffToChangeTrigger > 1.2) {
-                this.trailingPrice = bar.close / 1.2;
+              if (diffToChangeTrigger > 1.02) {
+                this.trailingPrice = bar.close / 1.02;
               }
             }
 
@@ -107,7 +107,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             const cond3 = false; // btcChange.change_1h < 0 && btcChange.change_24h < 0;
             const cond4 =
               this.buyPrice > 0 &&
-              this.trailingPrice / this.buyPrice > 1.3 &&
+              this.trailingPrice / this.buyPrice > 1.03 &&
               bar.close <= this.trailingPrice;
             if (this.buyPrice > 0) {
               console.log(
