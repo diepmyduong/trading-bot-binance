@@ -20,6 +20,7 @@ class TradingBot extends EventEmitter {
   buyOrder = null;
   sellOrder = null;
   buyPrice = 0;
+  trailingPrice = 0;
   precision = 0;
   market = null;
   constructor({ botName, asset, base, capital, tfLong, tfShort }) {
@@ -93,16 +94,27 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
           var profit = bar.close / this.buyPrice - 1;
           // console.log(`[${this.botName}] RSI: ${last(rsi)}`);
           if (!isNew) {
+            if (this.buyPrice > 0) {
+              const diffToChangeTrigger = bar.close / this.trailingPrice;
+              if (diffToChangeTrigger > 1.2) {
+                this.trailingPrice = bar.close / 1.2;
+              }
+            }
+
             const cond1 = last(rsi) >= 90 && profit > 0.1;
             const cond2 = false; // this.buyPrice > 0 && bar.close < bar.high && profit >= 0.2;
             const btcChange = getBTCData();
             const cond3 = false; // btcChange.change_1h < 0 && btcChange.change_24h < 0;
+            const cond4 =
+              this.buyPrice > 0 &&
+              this.trailingPrice / this.buyPrice > 1.3 &&
+              bar.close <= this.trailingPrice;
             console.log(
-              `RSI: ${last(rsi)}, Profit: ${profit.toFixed(1)}, BTC 1h: ${
-                btcChange.change_1h
-              }, BTC 24h: ${btcChange.change_24h}`
+              `Trailing Price: ${(this.trailingPrice / this.buyPrice).toFixed(2)}%. Diff Sell: ${(
+                bar.close / this.trailingPrice
+              ).toFixed(2)}%`
             );
-            if (this.isHolding && (cond1 || cond2 || cond3)) {
+            if (this.isHolding && (cond1 || cond2 || cond3 || cond4)) {
               this.logSellOrderRSI(last(rsi));
               await this.sell(last(this.barsShort));
             }
@@ -125,7 +137,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
             // Buy
             const cond1 = barLong.close > smaLong;
             const cond2 = preBar.open < smaShort1 && preBar.close > smaShort1;
-            const cond3 = preBar.low > preSar1;
+            const cond3 = true; // preBar.low > preSar1;
             const cond5 = preBar && preBar.close <= smaShort1 * 1.05;
             const btcChange = getBTCData();
             const cond6 = true; // btcChange.change_24h >= 1 && btcChange.change_1h > 0 && last(rsi) > 50;
@@ -204,12 +216,13 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
     }
     const ticker = await binanceClient.fetchTicker(this.symbol);
     const price = ticker.last;
-    let capital = parseFloat((baseFee * 0.9).toFixed());
+    let capital = parseFloat((baseFee * 0.98).toFixed());
     capital = capital < this.capital ? this.capital : capital;
     let qty = capital / price;
     qty = parseFloat(toFixed(qty, this.precision));
     this.buyOrder = await binanceClient.createMarketOrder(this.symbol, "buy", qty);
     this.buyPrice = price;
+    this.trailingPrice = price * 0.98;
     this.watchOrder(this.buyOrder);
     this.logBuyOrderSended(this.buyOrder);
     this.isHolding = true;
@@ -263,6 +276,7 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
       this.logBalance();
       this.buyOrder = null;
       this.buyPrice = 0;
+      this.trailingPrice = 0;
       this.isHolding = false;
     });
     this.logSellOrderSended(this.sellOrder);
@@ -341,6 +355,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
       if (o.side == "buy" && o.status == "closed") {
         this.buyOrder = o;
         this.buyPrice = o.price;
+        this.trailingPrice = o.price;
         console.log(`FIND BUY ORDER: ${this.buyOrder.id} Price: ${this.buyPrice}`);
         break;
       }
@@ -356,6 +371,7 @@ Pre Bar Open: ${preBar.open} < SMA Short: ${smaShort1} < Pre Bar Close: ${preBar
       if (order.side == "buy") {
         this.buyOrder = order;
         this.buyPrice = order.price;
+        this.trailingPrice = order.price;
         console.log(`UPDATE OPENING BUY ORDER: ${this.buyOrder.id} Price: ${this.buyPrice}`);
         this.watchOrder(order);
       } else {
