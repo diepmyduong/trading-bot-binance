@@ -290,13 +290,13 @@ Time Frame: ${this.tfLong} : ${this.tfShort}`);
 
   async checkBalanceValid() {
     const balances = await binanceClient.fetchBalance();
-    if (balances[this.base].free < this.capital) {
-      throw Error(
-        `NOT Enough Capital. Skip Buy Order. Balance: ${balances[this.base].free} - Capital: ${
-          this.capital
-        }`
-      );
-    }
+    // if (balances[this.base].free < this.capital) {
+    //   throw Error(
+    //     `NOT Enough Capital. Skip Buy Order. Balance: ${balances[this.base].free} - Capital: ${
+    //       this.capital
+    //     }`
+    //   );
+    // }
     return balances[this.base].free;
   }
   logSellOrder(preBar, smaShort2) {
