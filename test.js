@@ -10,6 +10,11 @@ const fs = require("fs");
 const { getCoin } = require("./coin360");
 
 (async () => {
+  setInterval(() => {
+    delete require.cache[require.resolve("./btc_change.json")];
+    const btc = require("./btc_change.json");
+    console.log("btc", btc.change_24h);
+  }, 2000);
   // await binanceClient.fetchTickers(["HARD/USDT"]).then((res) => {
   //   console.log(JSON.stringify(res, null, 2));
   // });
@@ -19,13 +24,11 @@ const { getCoin } = require("./coin360");
   // await binanceClient.fetch(["HARD/USDT"]).then((res) => {
   //   console.log(JSON.stringify(res, null, 2));
   // });
-  const result = await binance.futuresAccountBalance();
-  const writeStream = fs.createWriteStream("future-balances.json");
-  writeStream.write(Buffer.from(JSON.stringify(result, null, 2)), () => console.log("done"));
-
+  // const result = await binance.futuresAccountBalance();
+  // const writeStream = fs.createWriteStream("future-balances.json");
+  // writeStream.write(Buffer.from(JSON.stringify(result, null, 2)), () => console.log("done"));
   // After you're done
   // clean();
-
   // console.log(
   //   await binance.order({
   //     symbol: "XLMETH",
@@ -34,7 +37,37 @@ const { getCoin } = require("./coin360");
   //     price: "0.0002",
   //   })
   // );
+  // short();
+  // closePosition();
 })();
+
+async function short() {
+  // console.log(await binance.futuresPositionModeChange({ dualSidePosition: false }));
+  // console.log(await binance.futuresLeverage({ symbol: "BTCUSDT", leverage: 1 }));
+  const result = await binance.futuresOrder({
+    symbol: "BTCUSDT",
+    side: "SELL",
+    // positionSide: "SHORT",
+    type: "MARKET",
+    quantity: 1,
+    leverage: 10,
+  });
+  const writeStream = fs.createWriteStream("future-market-order.json");
+  writeStream.write(Buffer.from(JSON.stringify(result, null, 2)), () => console.log("done"));
+  // const order = await binance.futuresMarginType();
+}
+
+async function closePosition() {
+  const result = await binance.futuresOrder({
+    symbol: "BTCUSDT",
+    side: "BUY",
+    type: "MARKET",
+    reduceOnly: true,
+    quantity: 1,
+  });
+  const writeStream = fs.createWriteStream("future-market-order.json");
+  writeStream.write(Buffer.from(JSON.stringify(result, null, 2)), () => console.log("done"));
+}
 
 // (async () => {
 //   var asset = "TFUEL";

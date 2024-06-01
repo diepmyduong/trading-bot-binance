@@ -1,0 +1,23 @@
+{
+  "orderId": 2733130858,
+  "symbol": "BTCUSDT",
+  "status": "NEW",
+  "clientOrderId": "9V4pp8YJyttaGEW7GLDbBR",
+  "price": "0",
+  "avgPrice": "0.00000",
+  "origQty": "1",
+  "executedQty": "0",
+  "cumQty": "0",
+  "cumQuote": "0",
+  "timeInForce": "GTC",
+  "type": "MARKET",
+  "reduceOnly": true,
+  "closePosition": false,
+  "side": "BUY",
+  "positionSide": "BOTH",
+  "stopPrice": "0",
+  "workingType": "CONTRACT_PRICE",
+  "priceProtect": false,
+  "origType": "MARKET",
+  "updateTime": 1625843522177
+}

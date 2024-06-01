@@ -2,7 +2,9 @@ const fs = require("fs");
 const express = require("express");
 const bodyParser = require("body-parser");
 const { binanceClient, fetchKline } = require("./binance");
+const { get } = require("lodash");
 
+binanceClient.loadMarkets();
 const app = express();
 
 app.use(express.static("public"));
@@ -24,18 +26,23 @@ app.get("/api/kline", async (req, res) => {
 });
 
 app.post("/api/order/buy", async (req, res) => {
-  return res.status(500).send("Blocked");
+  // return res.status(500).send("Blocked");
   console.log(req.url, req.body);
   try {
     const { asset, base, balance } = req.body;
+
+    const market = binanceClient.market(`${asset}/${base}`);
     const ticker = await binanceClient.fetchTicker(`${asset}/${base}`);
+    let quantity = balance / ticker.last;
+    console.log("with filter", quantity);
+    const precision = getMarketPrecision(market);
+    quantity = parseFloat(toFixed(quantity, precision));
+    console.log({ precision, quantity });
     const price = ticker.ask;
-    const qty = Math.floor(balance / price);
-    const order = await binanceClient.createLimitBuyOrder(`${asset}/${base}`, qty, price);
+    // const qty = Math.floor(balance / price);
+    const order = await binanceClient.createLimitBuyOrder(`${asset}/${base}`, quantity, price);
     // console.log("balance, price", balance, price, qty);
-    // const order = await binanceClient.createMarketOrder(`${asset}/${base}`, "buy", qty, price, {
-    //   quoteOrderQty: balance,
-    // });
+    // const order = await binanceClient.createMarketOrder(`${asset}/${base}`, "buy", quantity);
     res.json(order);
   } catch (err) {
     console.log("buy error", err.message);
@@ -44,7 +51,7 @@ app.post("/api/order/buy", async (req, res) => {
 });
 
 app.post("/api/order/sell", async (req, res) => {
-  return res.status(500).send("Blocked");
+  // return res.status(500).send("Blocked");
   console.log(req.url, req.body);
   try {
     const { asset, base, price } = req.body;
@@ -52,11 +59,11 @@ app.post("/api/order/sell", async (req, res) => {
     const assetFree = balance[asset].free;
     const ticker = await binanceClient.fetchTicker(`${asset}/${base}`);
     const market = binanceClient.market(`${asset}/${base}`);
-    console.log("market", JSON.stringify(market, null, 2));
-    console.log("ticker bid", ticker.bid, ticker.ask, ticker.last);
+    const precision = getMarketPrecision(market);
+    const quantity = parseFloat(toFixed(assetFree, precision));
     const order = await await binanceClient.createLimitSellOrder(
       `${asset}/${base}`,
-      assetFree,
+      quantity,
       ticker.bid
     );
     // const order = await await binanceClient.createOrder(
@@ -68,13 +75,9 @@ app.post("/api/order/sell", async (req, res) => {
     //   { stopPrice: price * 0.999 }
     // );
 
+    console.log({ assetFree, quantity });
     // console.log(assetFree, price, { quoteOrderQty: assetFree * price });
-    // const order = await await binanceClient.createMarketOrder(
-    //   `${asset}/${base}`,
-    //   "sell",
-    //   assetFree,
-    //   price
-    // );
+    // const order = await await binanceClient.createMarketOrder(`${asset}/${base}`, "sell", quantity);
     res.json(order);
   } catch (err) {
     console.log("sell error", err.message);
@@ -83,7 +86,7 @@ app.post("/api/order/sell", async (req, res) => {
 });
 
 app.post("/api/order/cancelAll", async (req, res) => {
-  return res.status(500).send("Blocked");
+  // return res.status(500).send("Blocked");
   console.log(req.url, req.body);
   try {
     const { base, asset } = req.body;
@@ -115,6 +118,15 @@ app.listen(app.get("port"), "0.0.0.0", () => {
   console.log("Server is running on port", app.get("port"));
 });
 
+function getMarketPrecision(market) {
+  const stepSize = market.info.filters.find((f) => f.filterType == "LOT_SIZE").stepSize;
+  const precision = parseInt(Math.round(-Math.log10(stepSize), 0));
+  return precision;
+}
+function toFixed(num, fixed) {
+  var re = new RegExp("^-?\\d+(?:.\\d{0," + (fixed || -1) + "})?");
+  return num.toString().match(re)[0];
+}
 // const run = async () => {
 //
 // };

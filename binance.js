@@ -22,8 +22,8 @@ const binanceClient = new ccxt.binance({
 const binance = Binance({
   apiKey: config.debug ? config.testnetApiKey : config.apiKey,
   apiSecret: config.debug ? config.testnetApiSecret : config.apiSecret,
-  // httpFutures: "https://testnet.binancefuture.com",
-  // wsFutures: "wss://stream.binancefuture.com",
+  httpFutures: "https://testnet.binancefuture.com",
+  wsFutures: "wss://stream.binancefuture.com",
 });
 const binanceHost = config.debug ? testnet : mainnet;
 if (config.debug) binanceClient.setSandboxMode(true);
